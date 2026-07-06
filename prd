@@ -1,0 +1,1221 @@
+# wardOS PRD v0
+
+## 1. Product Name
+
+**wardOS**
+
+## 2. Product Summary
+
+wardOS is a lightweight operating dashboard for an Elders Quorum presidency to organize and run the ongoing work of the quorum. It brings together meetings, lessons, assignments, service opportunities, cleaning assignments, signup forms, calendar events, Sunday programs, and follow-up items into one clear workspace.
+
+wardOS is not intended to replace official Church tools or become a sensitive member-record system. It is an operational coordination layer for presidency work that is currently scattered across Google Sheets, Google Docs, shared calendars, emails, text threads, and agenda documents.
+
+## 3. Product Thesis
+
+Elders Quorum presidencies need a simple, calling-specific operating system that helps them know what is happening, what needs attention, who owns each assignment, and what needs to be prepared for Sunday.
+
+The core promise of wardOS is:
+
+**Open one dashboard and know what the quorum presidency needs to teach, plan, assign, follow up on, and publish next.**
+
+## 4. Problem Statement
+
+The current presidency workflow is fragmented. Important information lives across:
+
+- A shared Google Sheet with multiple operational tabs
+- Google Calendar
+- Google Drive documents
+- Meeting agenda documents
+- Emails
+- Text threads
+- Manual memory
+- QR-linked Sunday program workflows
+- Informal conversations after church
+
+This creates several problems:
+
+- Presidency members have to check too many places to get caught up.
+- Assignments are easy to lose or forget.
+- Meeting agendas and follow-up items are not always connected.
+- Service opportunities and cleaning assignments need better signup workflows.
+- Sunday program preparation is a separate recurring task.
+- Sensitive member-related information should not be mixed with general operational tracking.
+- New presidency members or counselors need a faster way to understand current work.
+
+## 5. Goals
+
+### Primary Goals
+
+- Create one dashboard for Elders Quorum presidency operations.
+- Import or seed operational information from the existing Google Sheet, Google Calendar, and Google Drive.
+- Support meeting agendas and action item follow-up.
+- Track lessons, service assignments, cleaning assignments, and activities.
+- Create simple signup forms with shareable links.
+- Support a weekly Sunday program that can be viewed through a QR code.
+- Keep sensitive individual/member-care information out of wardOS v0.
+- Make the app useful enough for the presidency to use immediately.
+
+### Secondary Goals
+
+- Reduce dependence on scattered Google Docs and Sheets.
+- Preserve links back to source documents when needed.
+- Allow authorized users to see what is current and what is pending.
+- Create a foundation for future AI-assisted meeting summaries and import review.
+
+## 6. Non-Goals
+
+wardOS v0 will not:
+
+- Replace official Church tools.
+- Sync directly with Church membership systems.
+- Store official membership records.
+- Store confidential pastoral, worthiness, financial, counseling, or private family notes.
+- Manage full ministering assignments in detail.
+- Replace the bishopric’s confidential records or decision-making.
+- Automatically email or text ward members.
+- Provide a full mobile app.
+- Provide complex multi-ward or stake-level administration.
+- Support two-way Google Sheets sync.
+- Support advanced role hierarchies beyond basic workspace access.
+
+## 7. Guiding Principle: Operational, Not Pastoral
+
+wardOS is designed for **operational coordination**, not confidential pastoral recordkeeping.
+
+Safe examples:
+
+- Lessons
+- Teachers
+- Cleaning assignments
+- Service opportunities
+- Signup forms
+- Activities
+- Meeting agenda items
+- Action items
+- Sunday program content
+- Calendar events
+- Public or semi-public announcements
+
+Sensitive examples that should not be stored in wardOS v0:
+
+- Worthiness concerns
+- Financial needs
+- Counseling notes
+- Private family situations
+- Sensitive ministering notes
+- Personal struggles
+- Confidential bishopric or presidency discussions
+- Detailed notes about individuals or families
+
+When in doubt, wardOS should link back to the source document rather than copy sensitive information into the system.
+
+## 8. Target Users
+
+### Primary Users
+
+- Elders Quorum President
+- First Counselor
+- Second Counselor
+- Elders Quorum Secretary
+
+### Secondary Users
+
+- Bishopric member, later
+- Relief Society presidency, later
+- Ward clerk, later
+- Activity helpers, later
+- Quorum members responding to signup forms
+- Ward members viewing the Sunday program
+
+## 9. Current Source System
+
+The current presidency operating system appears to be a shared Google Sheet with multiple tabs.
+
+Known tabs include:
+
+- My Covenant Path
+- Visit List
+- Lesson Schedule for the Year
+- Service Assignments
+- Ministering Assignments
+- Skills Checklist
+- Cleaning Assignments
+
+Additional sources include:
+
+- Shared Google Calendar
+- Google Drive folder with documents
+- Sunday program QR code workflow
+- Possible Google Docs agendas
+
+## 10. Source Tab Treatment
+
+### Lesson Schedule for the Year
+
+**wardOS Fit:** Strong fit  
+**Action:** Import into Lessons module.
+
+Fields may include:
+
+- Date
+- Lesson topic
+- Teacher
+- Backup teacher
+- Source material
+- Notes
+- Status
+
+### Service Assignments
+
+**wardOS Fit:** Strong fit  
+**Action:** Import into Service Opportunities and Assignments module.
+
+Fields may include:
+
+- Service need
+- Date needed
+- Owner
+- Assigned person or family
+- Status
+- Notes
+- Signup needed
+- Shareable signup link
+
+### Cleaning Assignments
+
+**wardOS Fit:** Strong fit  
+**Action:** Import into Cleaning Assignments module.
+
+Fields may include:
+
+- Cleaning date
+- Assigned families
+- Number of families needed
+- Confirmed families
+- Notes
+- Status
+- Signup link
+- Completion status
+
+### Skills Checklist
+
+**wardOS Fit:** Conditional fit  
+**Action:** Include only if voluntary and non-sensitive.
+
+Fields may include:
+
+- Skill name
+- Person/family name
+- Availability
+- Notes
+- Contact preference
+
+Privacy caution: avoid storing anything that feels personal, confidential, or sensitive.
+
+### Visit List
+
+**wardOS Fit:** Sensitive / limited fit  
+**Action:** Do not import detailed rows in v0.
+
+Possible v0 treatment:
+
+- Show as a linked external source only.
+- Optionally allow a high-level operational task like “Visit follow-up needed,” without details.
+- Do not copy private notes about families or individuals into wardOS.
+
+### My Covenant Path
+
+**wardOS Fit:** Sensitive / unclear  
+**Action:** Exclude from v0 import unless fields are clearly operational and non-sensitive.
+
+Possible v0 treatment:
+
+- External reference link only.
+- No AI summarization.
+- No automatic import.
+
+### Ministering Assignments
+
+**wardOS Fit:** Sensitive / official-data adjacent  
+**Action:** Exclude from v0 import.
+
+Possible v0 treatment:
+
+- External reference link only.
+- Do not recreate official ministering data.
+- Do not store private ministering notes.
+
+## 11. MVP Scope
+
+wardOS v0 should include the minimum set of features needed to replace the safe parts of the current Google Sheet workflow.
+
+### Included in v0
+
+1. Authentication
+2. Workspace dashboard
+3. Google Sheet import/seeding structure
+4. Manual data entry
+5. Lessons module
+6. Service opportunities module
+7. Cleaning assignments module
+8. Signup forms with shareable links
+9. Meeting mode
+10. Action items
+11. Sunday program builder
+12. Public Sunday program view for QR code
+13. Basic calendar view
+14. Source links back to Google files
+15. Sensitive-source exclusion rules
+
+### Not Included in v0
+
+1. Full Google Drive ingestion
+2. Full Google Calendar two-way sync
+3. AI extraction from all documents
+4. Official Church tool integration
+5. Full ministering management
+6. Private pastoral notes
+7. Advanced permissions
+8. Email/SMS sending
+9. Mobile app
+10. Recurring rotation automation
+11. Public SaaS onboarding
+
+## 12. Core User Flows
+
+### Flow 1: Login
+
+1. User visits wardOS.
+2. User signs in with Google.
+3. User lands on the wardOS dashboard.
+4. User sees upcoming lessons, assignments, cleaning needs, service opportunities, meetings, and Sunday program status.
+
+### Flow 2: Seed Data From Existing Google Sheet
+
+For v0, this may be manual CSV import or a hardcoded/imported sample from the existing sheet.
+
+1. User exports or connects the Google Sheet.
+2. wardOS identifies available tabs.
+3. wardOS marks tabs as safe, sensitive, or review-only.
+4. User imports safe tabs:
+   - Lesson Schedule
+   - Service Assignments
+   - Cleaning Assignments
+5. Sensitive tabs are excluded or stored only as source links.
+6. Imported items appear in the dashboard.
+
+### Flow 3: Run a Presidency Meeting
+
+1. User opens Meeting Mode.
+2. User creates or opens the current presidency meeting.
+3. wardOS displays agenda sections:
+   - Opening
+   - Review previous action items
+   - Lessons
+   - Service opportunities
+   - Cleaning assignments
+   - Activities
+   - Sunday program
+   - Calendar
+   - New assignments
+   - Decisions
+4. During the meeting, users create action items.
+5. Action items are assigned to presidency members.
+6. Meeting notes are saved.
+7. Dashboard updates with new assignments and decisions.
+
+### Flow 4: Manage Lesson Schedule
+
+1. User opens Lessons.
+2. User sees upcoming Sundays.
+3. User adds or edits lesson topic, teacher, backup teacher, and resources.
+4. Lesson status updates:
+   - Needs topic
+   - Needs teacher
+   - Assigned
+   - Prepared
+   - Completed
+5. Upcoming lesson appears on dashboard and may appear in Sunday program.
+
+### Flow 5: Create Service Opportunity Signup
+
+1. User opens Service Opportunities.
+2. User creates a new service need.
+3. User adds title, date, description, location, number of volunteers/items needed.
+4. User creates a signup form.
+5. wardOS generates a shareable public link.
+6. Members respond through the link.
+7. Responses appear in wardOS.
+8. Presidency marks the service opportunity as filled or completed.
+
+### Flow 6: Manage Cleaning Assignments
+
+1. User opens Cleaning Assignments.
+2. User creates or imports upcoming Saturday cleaning dates.
+3. User adds needed number of families.
+4. User assigns families manually or creates signup link.
+5. User tracks confirmed, declined, or completed status.
+6. Cleaning assignment appears on dashboard until completed.
+
+### Flow 7: Publish Sunday Program
+
+1. User opens Sunday Program.
+2. User creates program for upcoming Sunday.
+3. User fills in:
+   - Date
+   - Presiding
+   - Conducting
+   - Hymns
+   - Prayers
+   - Speakers
+   - Announcements
+   - Upcoming events
+   - Lesson schedule
+4. User previews public version.
+5. User publishes program.
+6. Public QR code link shows the current published program.
+7. Program is archived after Sunday.
+
+## 13. Dashboard Requirements
+
+The dashboard should answer:
+
+- What is happening this Sunday?
+- Who is teaching?
+- Is the Sunday program ready?
+- What service opportunities need attention?
+- What cleaning assignments are upcoming?
+- What assignments are overdue?
+- What is on the next meeting agenda?
+- What decisions or follow-ups came out of the last meeting?
+
+### Dashboard Sections
+
+1. This Sunday
+2. Sunday Program Status
+3. Upcoming Lessons
+4. Open Assignments
+5. Service Opportunities
+6. Cleaning Assignments
+7. Upcoming Calendar Items
+8. Next Presidency Meeting
+9. Recent Decisions
+10. Source Links
+
+## 14. Module Requirements
+
+### 14.1 Lessons Module
+
+Required fields:
+
+- Date
+- Topic
+- Source material
+- Teacher
+- Backup teacher
+- Status
+- Notes
+- Source link
+
+Statuses:
+
+- Needs topic
+- Needs teacher
+- Assigned
+- Prepared
+- Completed
+
+### 14.2 Assignments Module
+
+Required fields:
+
+- Title
+- Description
+- Owner
+- Due date
+- Related module
+- Status
+- Source link
+- Created from meeting, import, or manual entry
+
+Statuses:
+
+- Not started
+- In progress
+- Waiting
+- Complete
+- Archived
+
+### 14.3 Service Opportunities Module
+
+Required fields:
+
+- Title
+- Description
+- Date
+- Location
+- Owner
+- Needed items or volunteers
+- Signup form
+- Status
+- Source link
+
+Statuses:
+
+- Draft
+- Open
+- Filled
+- Completed
+- Archived
+
+### 14.4 Cleaning Assignments Module
+
+Required fields:
+
+- Cleaning date
+- Start time
+- Families needed
+- Assigned families
+- Confirmed families
+- Notes
+- Signup link
+- Status
+
+Statuses:
+
+- Needs families
+- Partially filled
+- Filled
+- Completed
+- Archived
+
+### 14.5 Signup Forms Module
+
+Required fields:
+
+- Form title
+- Description
+- Related service/cleaning/activity item
+- Public link
+- Signup slots
+- Responses
+- Open/closed status
+
+Response fields:
+
+- Name
+- Optional email
+- Optional phone
+- Selected slot/item
+- Comment
+- Timestamp
+
+Public response pages should not expose internal wardOS data.
+
+### 14.6 Meeting Mode
+
+Required fields:
+
+- Meeting date
+- Attendees
+- Agenda sections
+- Notes
+- Decisions
+- Action items
+- Related assignments
+
+Default agenda sections:
+
+- Opening
+- Review previous assignments
+- Lessons
+- Service opportunities
+- Cleaning assignments
+- Activities
+- Sunday program
+- Calendar
+- New assignments
+- Decisions
+- Closing
+
+### 14.7 Sunday Program Module
+
+Required fields:
+
+- Program date
+- Meeting type
+- Presiding
+- Conducting
+- Opening hymn
+- Opening prayer
+- Ward/stake business
+- Sacrament hymn
+- Speakers
+- Intermediate hymn or musical number
+- Closing hymn
+- Closing prayer
+- Announcements
+- Upcoming events
+- Lesson schedule
+- Public status
+- Published timestamp
+
+Statuses:
+
+- Draft
+- Ready for review
+- Published
+- Archived
+
+Public view requirements:
+
+- Mobile-friendly
+- No login required
+- Shows only published content
+- Does not expose internal notes
+- Stable QR link for current program
+- Archive view can be added later
+
+## 15. Import Requirements
+
+### v0 Import Strategy
+
+For same-day MVP, wardOS should support one of the following:
+
+- Manual CSV import from Google Sheet tabs
+- Manual copy/paste import
+- Seed script from exported CSV files
+- Hardcoded sample data based on current known tabs
+
+### v1 Import Strategy
+
+Later versions should support:
+
+- Google OAuth
+- Read selected Google Sheets
+- Read selected Google Calendar
+- Read selected Google Drive folder
+- Import review before saving records
+- Source links back to original docs/sheets/events
+
+### Import Review
+
+wardOS should not blindly import all extracted data.
+
+Import candidates should have statuses:
+
+- Pending review
+- Approved
+- Ignored
+- Marked sensitive
+- Needs editing
+
+Import review should allow the user to:
+
+- Approve item
+- Edit item
+- Ignore item
+- Mark source as sensitive
+- Link back to original source
+
+## 16. Privacy Requirements
+
+wardOS must include privacy guardrails from the start.
+
+### Privacy Rules
+
+- Do not store official membership records.
+- Do not store confidential pastoral notes.
+- Do not store worthiness, financial, counseling, or family-sensitive information.
+- Do not automatically summarize sensitive tabs.
+- Do not expose internal data through public links.
+- Public signup forms should only collect what is necessary.
+- Public Sunday program should only display intentionally published content.
+- Sensitive Google Sheet tabs should be excluded from default import.
+- Users should be able to delete imported data.
+
+### Sensitive Source Handling
+
+For tabs or documents marked sensitive:
+
+- Do not import row-level data.
+- Do not summarize with AI.
+- Do not show content on the dashboard.
+- Store only source title and link if needed.
+- Require intentional user action to import any field.
+
+## 17. Permissions
+
+### v0 Roles
+
+#### Admin
+
+Can:
+
+- Manage workspace
+- Import data
+- Create/edit/delete records
+- Publish Sunday program
+- Manage signup forms
+- Manage users
+
+#### Presidency Member
+
+Can:
+
+- View dashboard
+- Create/edit assignments
+- Run meetings
+- Manage lessons
+- Manage service opportunities
+- Manage cleaning assignments
+- Draft Sunday program
+
+#### Viewer
+
+Can:
+
+- View internal dashboard
+- View assignments
+- View lessons
+- View service opportunities
+- Cannot publish or delete
+
+#### Public User
+
+Can:
+
+- View published Sunday program
+- Submit signup form responses
+- Cannot access dashboard
+
+## 18. Technical Stack Recommendation
+
+### Recommended Same-Day Prototype Stack
+
+The goal is to get a live version running quickly with minimal infrastructure complexity.
+
+#### Frontend
+
+**Next.js**
+
+Reasons:
+
+- Fast to build
+- Supports app routes and server actions
+- Easy deployment
+- Good for dashboard-style apps
+- Supports public pages and authenticated pages in the same app
+
+#### Styling
+
+**Tailwind CSS**
+
+Reasons:
+
+- Fast UI development
+- Easy responsive layouts
+- Works well with dashboards
+- Low overhead
+
+#### UI Components
+
+**shadcn/ui**
+
+Reasons:
+
+- Great for dashboards, tables, forms, dialogs, tabs, and cards
+- Looks polished quickly
+- Built on Radix primitives
+- Easy to customize
+
+#### Authentication
+
+**Clerk**
+
+Reasons:
+
+- Fast login setup
+- Google sign-in support
+- User/session management
+- Good fit for a same-day prototype
+
+#### Database
+
+**Supabase Postgres**
+
+Reasons:
+
+- Hosted Postgres
+- Fast setup
+- Good relational data model
+- Works well with Next.js
+- Can support future row-level security
+- Useful if wardOS later needs multi-workspace support
+
+Alternative:
+
+**Neon Postgres**
+
+Also a good option, especially if using Prisma.
+
+#### ORM
+
+**Prisma**
+
+Reasons:
+
+- Clear schema
+- Easy migrations
+- Works well with Postgres
+- Good for quickly evolving product models
+
+Alternative:
+
+**Drizzle**
+
+Lighter weight, but Prisma may be easier for a fast PRD-to-build workflow.
+
+#### Deployment
+
+**Vercel**
+
+Reasons:
+
+- Best fit for Next.js
+- Fast deploy
+- Easy preview URLs
+- Environment variable support
+- Simple production deployment
+
+#### Forms
+
+Build native wardOS forms first.
+
+No need for a separate form tool in v0.
+
+#### Email/SMS
+
+Not included in v0.
+
+Future options:
+
+- Resend for email
+- Twilio for SMS
+- SendGrid for email
+
+#### File/Google Import
+
+v0:
+
+- CSV upload
+- Manual seed script
+- Manual source links
+
+v1:
+
+- Google APIs
+- Google OAuth scopes
+- Google Sheets API
+- Google Calendar API
+- Google Drive API
+
+Future:
+
+- MCP-based ingestion for AI-assisted extraction
+
+## 19. Proposed v0 Technical Architecture
+
+### App Structure
+
+Authenticated app:
+
+- `/dashboard`
+- `/meetings`
+- `/lessons`
+- `/assignments`
+- `/service`
+- `/cleaning`
+- `/program`
+- `/settings`
+- `/imports`
+
+Public app:
+
+- `/p/[wardSlug]/program`
+- `/signup/[formId]`
+
+Admin/settings:
+
+- `/settings/workspace`
+- `/settings/sources`
+- `/settings/users`
+
+### Data Storage
+
+Use Postgres tables for:
+
+- workspaces
+- users
+- workspace_members
+- sources
+- lessons
+- assignments
+- service_opportunities
+- cleaning_assignments
+- signup_forms
+- signup_slots
+- signup_responses
+- meetings
+- meeting_sections
+- decisions
+- sunday_programs
+- import_batches
+- import_candidates
+
+## 20. Initial Data Model
+
+### Workspace
+
+Represents the ward or quorum workspace.
+
+Fields:
+
+- id
+- name
+- slug
+- created_at
+- updated_at
+
+### User
+
+Fields:
+
+- id
+- clerk_user_id
+- name
+- email
+- created_at
+- updated_at
+
+### WorkspaceMember
+
+Fields:
+
+- id
+- workspace_id
+- user_id
+- role
+- created_at
+
+### Source
+
+Represents a Google Sheet, Doc, Calendar, Drive folder, CSV upload, or manual source.
+
+Fields:
+
+- id
+- workspace_id
+- type
+- name
+- url
+- sensitivity
+- created_at
+
+Sensitivity values:
+
+- safe
+- review
+- sensitive
+- excluded
+
+### Lesson
+
+Fields:
+
+- id
+- workspace_id
+- date
+- topic
+- source_material
+- teacher
+- backup_teacher
+- status
+- notes
+- source_id
+- created_at
+- updated_at
+
+### Assignment
+
+Fields:
+
+- id
+- workspace_id
+- title
+- description
+- owner
+- due_date
+- status
+- related_type
+- related_id
+- source_id
+- created_at
+- updated_at
+
+### ServiceOpportunity
+
+Fields:
+
+- id
+- workspace_id
+- title
+- description
+- service_date
+- location
+- owner
+- status
+- signup_form_id
+- source_id
+- created_at
+- updated_at
+
+### CleaningAssignment
+
+Fields:
+
+- id
+- workspace_id
+- cleaning_date
+- start_time
+- families_needed
+- status
+- notes
+- signup_form_id
+- source_id
+- created_at
+- updated_at
+
+### SignupForm
+
+Fields:
+
+- id
+- workspace_id
+- title
+- description
+- public_slug
+- related_type
+- related_id
+- status
+- created_at
+- updated_at
+
+### SignupSlot
+
+Fields:
+
+- id
+- signup_form_id
+- title
+- description
+- quantity_needed
+- created_at
+- updated_at
+
+### SignupResponse
+
+Fields:
+
+- id
+- signup_form_id
+- signup_slot_id
+- name
+- email
+- phone
+- comment
+- created_at
+
+### Meeting
+
+Fields:
+
+- id
+- workspace_id
+- meeting_date
+- title
+- status
+- notes
+- created_at
+- updated_at
+
+### Decision
+
+Fields:
+
+- id
+- workspace_id
+- meeting_id
+- title
+- description
+- created_at
+
+### SundayProgram
+
+Fields:
+
+- id
+- workspace_id
+- program_date
+- status
+- presiding
+- conducting
+- opening_hymn
+- opening_prayer
+- ward_business
+- sacrament_hymn
+- speakers
+- intermediate_hymn
+- closing_hymn
+- closing_prayer
+- announcements
+- upcoming_events
+- lesson_schedule
+- published_at
+- created_at
+- updated_at
+
+### ImportBatch
+
+Fields:
+
+- id
+- workspace_id
+- source_id
+- status
+- created_at
+
+### ImportCandidate
+
+Fields:
+
+- id
+- import_batch_id
+- candidate_type
+- raw_data
+- mapped_data
+- status
+- created_at
+- updated_at
+
+## 21. Same-Day Live Prototype Scope
+
+If the goal is to have something live quickly, the first live version should be intentionally narrow.
+
+### Must Have Tonight
+
+- Login with Google through Clerk
+- Create one workspace
+- Dashboard with summary cards
+- Lessons page
+- Assignments page
+- Service opportunities page
+- Cleaning assignments page
+- Sunday program builder
+- Public Sunday program page
+- Signup form creation
+- Public signup response page
+- Basic seed data manually entered or loaded from simple CSV/seed script
+- Deploy to Vercel
+
+### Should Have Tonight
+
+- Basic meeting mode
+- Source links back to Google Sheet/Docs
+- Status filters
+- Simple responsive mobile view for public pages
+
+### Could Wait
+
+- Google API integration
+- Google Drive document parsing
+- Google Calendar sync
+- AI import review
+- Advanced permissions
+- Email/SMS reminders
+- Automated cleaning rotation
+- Multi-ward support
+
+## 22. Success Criteria
+
+wardOS v0 is successful if:
+
+- A presidency member can log in and see the current state of quorum operations.
+- Lessons, service opportunities, and cleaning assignments are easier to manage than in the current sheet.
+- A service or cleaning signup form can be created and shared.
+- The Sunday program can be drafted, published, and viewed from a public QR-friendly link.
+- A presidency meeting can be run with agenda items and action items.
+- Sensitive member information is not imported or stored.
+- The app is useful enough to try for one full Sunday cycle.
+
+## 23. Future Roadmap
+
+### v1
+
+- Google Sheets import
+- Google Calendar read integration
+- Google Drive source links
+- Import review interface
+- Better meeting agenda templates
+- Better dashboard filtering
+- Archive completed items
+
+### v2
+
+- Google Drive document ingestion
+- AI-assisted action item extraction
+- AI-assisted meeting summary
+- AI-assisted Sunday program draft
+- Cleaning rotation suggestions
+- Activity planning templates
+- Email notifications
+
+### v3
+
+- Multi-organization support
+- Relief Society version
+- Bishopric/ward council operating view
+- Shared ward calendar workflows
+- Advanced role permissions
+- Optional mobile app
+- More robust public communication pages
+
+## 24. Open Questions
+
+1. Should wardOS v0 be only for Elders Quorum, or should it support ward-level modules from the start?
+2. Should Sunday Program be owned by Elders Quorum, bishopric, or general ward admin users?
+3. Should signup responses collect phone/email, or only name and response?
+4. Should cleaning assignments be assigned manually, or should wardOS eventually suggest rotations?
+5. Should sensitive tabs appear as links only, or be hidden entirely?
+6. Should the public Sunday Program link use a stable ward URL that always shows the current program?
+7. Should imported records be editable in wardOS, or should source documents remain the source of truth?
+8. Should wardOS write back to Google Sheets/Calendar in the future, or remain read/import-only?
+9. Who should be able to publish the Sunday program?
+10. What exact fields exist in the current Google Sheet tabs?
+
+## 25. Build Recommendation
+
+Build wardOS v0 as a focused internal prototype first.
+
+The first live version should not try to fully ingest every Google source. It should prove the core operating workflow:
+
+- Dashboard
+- Lessons
+- Assignments
+- Service opportunities
+- Cleaning assignments
+- Signup forms
+- Sunday program
+- Meeting mode
+
+Once the presidency uses it for one or two weeks, the next priority should be Google Sheet import and calendar integration.
