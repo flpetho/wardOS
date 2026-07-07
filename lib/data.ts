@@ -1,7 +1,12 @@
 import type {
   Assignment,
+  AgendaItem,
   CleaningAssignment,
+  Decision,
+  LeadershipRole,
+  LeadershipRoleId,
   Lesson,
+  Meeting,
   ServiceOpportunity,
   SignupForm,
   SundayProgram,
@@ -11,6 +16,45 @@ export const workspace = {
   name: "Oak Hills Ward",
   slug: process.env.NEXT_PUBLIC_WARD_SLUG || "oak-hills",
 };
+
+export const leadershipRoles: LeadershipRole[] = [
+  {
+    id: "eqp",
+    navLabel: "EQP",
+    title: "Elders Quorum President",
+    person: "Ethan Ward",
+    calling: "EQP",
+    summary: "Owns presidency direction, coordination with bishopric, and decisions that need quorum-wide alignment.",
+    responsibilities: ["Presidency priorities", "Bishopric coordination", "Sunday readiness"],
+  },
+  {
+    id: "eq1",
+    navLabel: "EQ1",
+    title: "First Counselor",
+    person: "Ferenc Petho",
+    calling: "EQ1",
+    summary: "Owns Family History and Service Assignments, with agenda items and follow-up work grouped here.",
+    responsibilities: ["Family History", "Service Assignments"],
+  },
+  {
+    id: "eq2",
+    navLabel: "EQ2",
+    title: "Second Counselor",
+    person: "Marcus Lee",
+    calling: "EQ2",
+    summary: "Owns lessons, activities support, and cleaning coordination until the presidency refines domains.",
+    responsibilities: ["Lessons", "Activities", "Cleaning Assignments"],
+  },
+  {
+    id: "eqs",
+    navLabel: "EQS",
+    title: "Elders Quorum Secretary",
+    person: "Caleb Jensen",
+    calling: "EQS",
+    summary: "Owns meeting notes, agenda hygiene, action item tracking, and source links.",
+    responsibilities: ["Meeting notes", "Action item tracking", "Sources"],
+  },
+];
 
 export const lessons: Lesson[] = [
   {
@@ -50,25 +94,51 @@ export const assignments: Assignment[] = [
     id: "assignment-1",
     title: "Confirm July 26 teacher",
     owner: "First Counselor",
+    ownerRole: "eq2",
     dueDate: "2026-07-10",
     relatedModule: "Lessons",
+    responsibility: "Lessons",
     status: "In progress",
   },
   {
     id: "assignment-2",
     title: "Review cleaning signup after Sunday",
     owner: "Secretary",
+    ownerRole: "eqs",
     dueDate: "2026-07-13",
     relatedModule: "Cleaning",
+    responsibility: "Action item tracking",
     status: "Not started",
   },
   {
     id: "assignment-3",
     title: "Publish Sunday program",
     owner: "EQ President",
+    ownerRole: "eqp",
     dueDate: "2026-07-11",
     relatedModule: "Sunday Program",
+    responsibility: "Sunday readiness",
     status: "Waiting",
+  },
+  {
+    id: "assignment-4",
+    title: "Draft family history invitation for quorum",
+    owner: "First Counselor",
+    ownerRole: "eq1",
+    dueDate: "2026-07-20",
+    relatedModule: "Leadership",
+    responsibility: "Family History",
+    status: "Not started",
+  },
+  {
+    id: "assignment-5",
+    title: "Find two more volunteers for Porter move",
+    owner: "First Counselor",
+    ownerRole: "eq1",
+    dueDate: "2026-07-16",
+    relatedModule: "Service",
+    responsibility: "Service Assignments",
+    status: "In progress",
   },
 ];
 
@@ -80,6 +150,8 @@ export const serviceOpportunities: ServiceOpportunity[] = [
     date: "2026-07-18",
     location: "Porter home",
     owner: "Second Counselor",
+    ownerRole: "eq1",
+    responsibility: "Service Assignments",
     needed: "6 volunteers",
     status: "Open",
     signupFormId: "move-assistance",
@@ -91,6 +163,8 @@ export const serviceOpportunities: ServiceOpportunity[] = [
     date: "2026-07-22",
     location: "Meetinghouse cultural hall",
     owner: "EQ Secretary",
+    ownerRole: "eq1",
+    responsibility: "Service Assignments",
     needed: "4 volunteers",
     status: "Draft",
     signupFormId: "activity-setup",
@@ -107,6 +181,8 @@ export const cleaningAssignments: CleaningAssignment[] = [
     confirmedFamilies: ["Anderson"],
     status: "Partially filled",
     signupFormId: "july-11-cleaning",
+    ownerRole: "eq2",
+    responsibility: "Cleaning Assignments",
   },
   {
     id: "cleaning-2",
@@ -117,6 +193,88 @@ export const cleaningAssignments: CleaningAssignment[] = [
     confirmedFamilies: [],
     status: "Needs families",
     signupFormId: "july-25-cleaning",
+    ownerRole: "eq2",
+    responsibility: "Cleaning Assignments",
+  },
+];
+
+export const agendaItems: AgendaItem[] = [
+  {
+    id: "agenda-1",
+    title: "Family history Sunday invitation",
+    detail: "Decide whether to invite a ward family history consultant into quorum for five minutes.",
+    ownerRole: "eq1",
+    responsibility: "Family History",
+    status: "On agenda",
+    meetingDate: "2026-07-14",
+  },
+  {
+    id: "agenda-2",
+    title: "Porter move coverage",
+    detail: "Carry over until the signup has six confirmed volunteers.",
+    ownerRole: "eq1",
+    responsibility: "Service Assignments",
+    status: "Carried over",
+    meetingDate: "2026-07-14",
+  },
+  {
+    id: "agenda-3",
+    title: "July 26 teacher still needed",
+    detail: "Confirm assignment and backup before Sunday.",
+    ownerRole: "eq2",
+    responsibility: "Lessons",
+    status: "On agenda",
+    meetingDate: "2026-07-14",
+  },
+  {
+    id: "agenda-4",
+    title: "Sensitive source treatment",
+    detail: "Agree whether Visit List and Ministering Assignments stay link-only.",
+    ownerRole: "eqp",
+    responsibility: "Presidency priorities",
+    status: "Proposed",
+    meetingDate: "2026-07-28",
+  },
+  {
+    id: "agenda-5",
+    title: "Meeting notes format",
+    detail: "Standardize decisions, action items, and carry-over notes.",
+    ownerRole: "eqs",
+    responsibility: "Meeting notes",
+    status: "Carried over",
+    meetingDate: "2026-07-14",
+  },
+];
+
+export const decisions: Decision[] = [
+  {
+    id: "decision-1",
+    title: "Keep sensitive tabs link-only",
+    detail: "No row-level data from Visit List or Ministering Assignments in v0.",
+    meetingDate: "2026-06-30",
+  },
+];
+
+export const meetings: Meeting[] = [
+  {
+    id: "meeting-1",
+    title: "EQ Presidency Meeting",
+    meetingDate: "2026-07-14",
+    cadence: "Bi-monthly",
+    status: "Open",
+    sections: [
+      "Opening",
+      "Carry-over items",
+      "Lessons",
+      "Family History",
+      "Service Assignments",
+      "Cleaning",
+      "Sunday Program",
+      "New assignments",
+      "Decisions",
+    ],
+    carriedOverItemIds: ["agenda-2", "agenda-5"],
+    decisionIds: ["decision-1"],
   },
 ];
 
@@ -206,4 +364,17 @@ export const sources = [
 
 export function getSignupForm(formId: string) {
   return signupForms.find((form) => form.id === formId);
+}
+
+export function getLeadershipRole(roleId: string) {
+  return leadershipRoles.find((role) => role.id === roleId);
+}
+
+export function getLeadershipWork(roleId: LeadershipRoleId) {
+  return {
+    assignments: assignments.filter((item) => item.ownerRole === roleId),
+    agendaItems: agendaItems.filter((item) => item.ownerRole === roleId),
+    serviceOpportunities: serviceOpportunities.filter((item) => item.ownerRole === roleId),
+    cleaningAssignments: cleaningAssignments.filter((item) => item.ownerRole === roleId),
+  };
 }

@@ -5,8 +5,11 @@ import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  agendaItems,
   assignments,
   cleaningAssignments,
+  leadershipRoles,
+  meetings,
   lessons,
   serviceOpportunities,
   sundayProgram,
@@ -16,6 +19,8 @@ import {
 export default function DashboardPage() {
   const openAssignments = assignments.filter((item) => item.status !== "Completed");
   const currentLesson = lessons[0];
+  const nextMeeting = meetings[0];
+  const carryOverCount = agendaItems.filter((item) => item.status === "Carried over").length;
 
   return (
     <>
@@ -36,7 +41,7 @@ export default function DashboardPage() {
         <SummaryCard title="This Sunday" value={currentLesson.topic} detail={currentLesson.teacher} icon={<CalendarCheck />} />
         <SummaryCard title="Program" value={sundayProgram.status} detail={sundayProgram.programDate} icon={<Megaphone />} />
         <SummaryCard title="Open assignments" value={String(openAssignments.length)} detail="Across active modules" icon={<ClipboardList />} />
-        <SummaryCard title="Open signups" value="2" detail="Service and cleaning" icon={<Users />} />
+        <SummaryCard title="Next meeting" value={nextMeeting.meetingDate} detail={`${carryOverCount} carried over`} icon={<Users />} />
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
@@ -79,6 +84,35 @@ export default function DashboardPage() {
       <section className="grid gap-4 lg:grid-cols-3">
         <Card>
           <CardHeader>
+            <CardTitle>EQ Leadership</CardTitle>
+            <CardDescription>Role-owned work across the presidency.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            {leadershipRoles.map((role) => {
+              const roleAssignments = assignments.filter((item) => item.ownerRole === role.id);
+              const roleAgenda = agendaItems.filter((item) => item.ownerRole === role.id);
+
+              return (
+                <div key={role.id} className="rounded-md border p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-medium">{role.navLabel} · {role.person}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {role.responsibilities.join(", ")}
+                      </p>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {roleAssignments.length + roleAgenda.length}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
             <CardTitle>Assignments</CardTitle>
             <CardDescription>Action items needing ownership.</CardDescription>
           </CardHeader>
@@ -95,6 +129,28 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
+        <Card>
+          <CardHeader>
+            <CardTitle>Meeting agenda</CardTitle>
+            <CardDescription>Current and carried-over agenda items.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            {agendaItems.slice(0, 4).map((item) => (
+              <div key={item.id} className="rounded-md border p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-medium">{item.title}</p>
+                    <p className="text-sm text-muted-foreground">{item.responsibility}</p>
+                  </div>
+                  <StatusBadge status={item.status} />
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Service</CardTitle>

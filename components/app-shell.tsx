@@ -2,23 +2,43 @@ import Link from "next/link";
 import {
   CalendarDays,
   ClipboardList,
+  Crown,
   HandHeart,
   Home,
   LinkIcon,
   Megaphone,
+  NotebookTabs,
   Sparkles,
   Users,
 } from "lucide-react";
 import { workspace } from "@/lib/data";
 
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/lessons", label: "Lessons", icon: CalendarDays },
-  { href: "/service", label: "Service", icon: HandHeart },
-  { href: "/cleaning", label: "Cleaning", icon: Sparkles },
-  { href: "/program", label: "Program", icon: Megaphone },
-  { href: "/signups", label: "Signups", icon: Users },
-  { href: "/sources", label: "Sources", icon: LinkIcon },
+const navGroups = [
+  {
+    label: "Command",
+    items: [{ href: "/dashboard", label: "Dashboard", icon: Home }],
+  },
+  {
+    label: "EQ Leadership",
+    items: [
+      { href: "/leadership/eqp", label: "EQP", icon: Crown },
+      { href: "/leadership/eq1", label: "EQ1", icon: Users },
+      { href: "/leadership/eq2", label: "EQ2", icon: Users },
+      { href: "/leadership/eqs", label: "EQS", icon: ClipboardList },
+    ],
+  },
+  {
+    label: "Work Areas",
+    items: [
+      { href: "/meetings", label: "Meetings", icon: NotebookTabs },
+      { href: "/lessons", label: "Lessons", icon: CalendarDays },
+      { href: "/service", label: "Service", icon: HandHeart },
+      { href: "/cleaning", label: "Cleaning", icon: Sparkles },
+      { href: "/program", label: "Program", icon: Megaphone },
+      { href: "/signups", label: "Signups", icon: Users },
+      { href: "/sources", label: "Sources", icon: LinkIcon },
+    ],
+  },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -34,16 +54,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <p className="text-sm text-muted-foreground">{workspace.name}</p>
           </div>
         </Link>
-        <nav className="mt-8 flex flex-col gap-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
-              <item.icon />
-              {item.label}
-            </Link>
+        <nav className="mt-8 flex flex-col gap-5">
+          {navGroups.map((group) => (
+            <div key={group.label} className="flex flex-col gap-1">
+              <p className="px-3 text-xs font-semibold uppercase tracking-normal text-muted-foreground">
+                {group.label}
+              </p>
+              {group.items.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+                >
+                  <item.icon />
+                  {item.label}
+                </Link>
+              ))}
+            </div>
           ))}
         </nav>
         <div className="mt-auto rounded-lg border bg-background p-3 text-sm">
@@ -64,16 +91,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </Link>
           </div>
           <nav className="mt-3 flex gap-2 overflow-x-auto pb-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex shrink-0 items-center gap-2 rounded-md border bg-card px-3 py-2 text-sm"
-              >
-                <item.icon />
-                {item.label}
-              </Link>
-            ))}
+            {navGroups
+              .flatMap((group) => group.items)
+              .map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex shrink-0 items-center gap-2 rounded-md border bg-card px-3 py-2 text-sm"
+                >
+                  <item.icon />
+                  {item.label}
+                </Link>
+              ))}
           </nav>
         </header>
         <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">

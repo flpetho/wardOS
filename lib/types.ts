@@ -13,7 +13,24 @@ export type Status =
   | "Needs families"
   | "Partially filled"
   | "Published"
-  | "Ready for review";
+  | "Ready for review"
+  | "Proposed"
+  | "On agenda"
+  | "Carried over"
+  | "Decided"
+  | "Archived";
+
+export type LeadershipRoleId = "eqp" | "eq1" | "eq2" | "eqs";
+
+export type LeadershipRole = {
+  id: LeadershipRoleId;
+  navLabel: string;
+  title: string;
+  person: string;
+  calling: string;
+  summary: string;
+  responsibilities: string[];
+};
 
 export type Lesson = {
   id: string;
@@ -30,8 +47,10 @@ export type Assignment = {
   id: string;
   title: string;
   owner: string;
+  ownerRole: LeadershipRoleId;
   dueDate: string;
   relatedModule: string;
+  responsibility: string;
   status: Status;
 };
 
@@ -42,6 +61,8 @@ export type ServiceOpportunity = {
   date: string;
   location: string;
   owner: string;
+  ownerRole: LeadershipRoleId;
+  responsibility: string;
   needed: string;
   status: Status;
   signupFormId: string;
@@ -56,6 +77,8 @@ export type CleaningAssignment = {
   confirmedFamilies: string[];
   status: Status;
   signupFormId: string;
+  ownerRole: LeadershipRoleId;
+  responsibility: string;
 };
 
 export type SignupForm = {
@@ -83,4 +106,32 @@ export type SundayProgram = {
   announcements: string[];
   upcomingEvents: string[];
   lessonSchedule: string;
+};
+
+export type AgendaItem = {
+  id: string;
+  title: string;
+  detail: string;
+  ownerRole: LeadershipRoleId;
+  responsibility: string;
+  status: "Proposed" | "On agenda" | "Carried over" | "Decided" | "Archived";
+  meetingDate: string;
+};
+
+export type Meeting = {
+  id: string;
+  title: string;
+  meetingDate: string;
+  cadence: string;
+  status: "Draft" | "Open" | "Completed";
+  sections: string[];
+  carriedOverItemIds: string[];
+  decisionIds: string[];
+};
+
+export type Decision = {
+  id: string;
+  title: string;
+  detail: string;
+  meetingDate: string;
 };
