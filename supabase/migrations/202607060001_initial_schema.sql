@@ -200,6 +200,18 @@ create table if not exists decisions (
   created_at timestamptz not null default now()
 );
 
+create table if not exists budget_categories (
+  id uuid primary key default gen_random_uuid(),
+  workspace_id uuid not null references workspaces(id) on delete cascade,
+  year integer not null,
+  name text not null,
+  allocated numeric(10, 2) not null default 0,
+  spent numeric(10, 2) not null default 0,
+  pending numeric(10, 2) not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists sunday_programs (
   id uuid primary key default gen_random_uuid(),
   workspace_id uuid not null references workspaces(id) on delete cascade,
@@ -259,6 +271,7 @@ alter table meetings enable row level security;
 alter table meeting_sections enable row level security;
 alter table agenda_items enable row level security;
 alter table decisions enable row level security;
+alter table budget_categories enable row level security;
 alter table sunday_programs enable row level security;
 alter table import_batches enable row level security;
 alter table import_candidates enable row level security;

@@ -137,3 +137,17 @@ export type Decision = {
   detail: string;
   meetingDate: string;
 };
+
+export type BudgetCategory = {
+  id: string;
+  name: string;
+  allocated: number;
+  spent: number;
+  pending: number;
+};
+
+export type BudgetSummary = {
+  year: number;
+  totalAllocated: number;
+  categories: BudgetCategory[];
+};

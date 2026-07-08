@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { ArrowRight, CalendarCheck, ClipboardList, Megaphone, Users } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarCheck,
+  ClipboardList,
+  DollarSign,
+  Megaphone,
+} from "lucide-react";
 import { PageHeading } from "@/components/page-heading";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
@@ -7,9 +13,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import {
   agendaItems,
   assignments,
+  budgetSummary,
   cleaningAssignments,
   leadershipRoles,
-  meetings,
   lessons,
   serviceOpportunities,
   sundayProgram,
@@ -19,8 +25,9 @@ import {
 export default function DashboardPage() {
   const openAssignments = assignments.filter((item) => item.status !== "Completed");
   const currentLesson = lessons[0];
-  const nextMeeting = meetings[0];
-  const carryOverCount = agendaItems.filter((item) => item.status === "Carried over").length;
+  const budgetSpent = budgetSummary.categories.reduce((sum, item) => sum + item.spent, 0);
+  const budgetPending = budgetSummary.categories.reduce((sum, item) => sum + item.pending, 0);
+  const budgetRemaining = budgetSummary.totalAllocated - budgetSpent - budgetPending;
 
   return (
     <>
@@ -41,7 +48,7 @@ export default function DashboardPage() {
         <SummaryCard title="This Sunday" value={currentLesson.topic} detail={currentLesson.teacher} icon={<CalendarCheck />} />
         <SummaryCard title="Program" value={sundayProgram.status} detail={sundayProgram.programDate} icon={<Megaphone />} />
         <SummaryCard title="Open assignments" value={String(openAssignments.length)} detail="Across active modules" icon={<ClipboardList />} />
-        <SummaryCard title="Next meeting" value={nextMeeting.meetingDate} detail={`${carryOverCount} carried over`} icon={<Users />} />
+        <SummaryCard title="Budget remaining" value={formatCurrency(budgetRemaining)} detail={`${budgetSummary.year} EQ budget`} icon={<DollarSign />} />
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
@@ -77,6 +84,75 @@ export default function DashboardPage() {
             <Link href="/sources" className="font-medium text-primary">
               Review source treatment
             </Link>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
+        <Card>
+          <CardHeader>
+            <CardTitle>Budget</CardTitle>
+            <CardDescription>
+              Operational view of the {budgetSummary.year} quorum budget.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Remaining after spent and pending</p>
+              <p className="mt-1 text-3xl font-semibold">{formatCurrency(budgetRemaining)}</p>
+            </div>
+            <div className="grid gap-3 text-sm sm:grid-cols-3">
+              <div className="rounded-md border p-3">
+                <p className="text-muted-foreground">Allocated</p>
+                <p className="font-medium">{formatCurrency(budgetSummary.totalAllocated)}</p>
+              </div>
+              <div className="rounded-md border p-3">
+                <p className="text-muted-foreground">Spent</p>
+                <p className="font-medium">{formatCurrency(budgetSpent)}</p>
+              </div>
+              <div className="rounded-md border p-3">
+                <p className="text-muted-foreground">Pending</p>
+                <p className="font-medium">{formatCurrency(budgetPending)}</p>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Keep reimbursements and confidential financial assistance outside wardOS.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Budget categories</CardTitle>
+            <CardDescription>Spending progress by operating area.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            {budgetSummary.categories.map((category) => {
+              const committed = category.spent + category.pending;
+              const percent = Math.min(Math.round((committed / category.allocated) * 100), 100);
+
+              return (
+                <div key={category.id} className="rounded-md border p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-medium">{category.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {formatCurrency(committed)} committed of {formatCurrency(category.allocated)}
+                      </p>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {formatCurrency(category.allocated - committed)} left
+                    </span>
+                  </div>
+                  <div className="mt-3 h-2 rounded-full bg-muted">
+                    <div
+                      className="h-2 rounded-full bg-primary"
+                      style={{ width: `${percent}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </CardContent>
         </Card>
       </section>
@@ -191,6 +267,14 @@ export default function DashboardPage() {
       </section>
     </>
   );
+}
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(value);
 }
 
 function SummaryCard({

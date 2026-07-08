@@ -1,6 +1,7 @@
 import type {
   Assignment,
   AgendaItem,
+  BudgetSummary,
   CleaningAssignment,
   Decision,
   LeadershipRole,
@@ -360,6 +361,41 @@ export const meetings: Meeting[] = [
     decisionIds: ["decision-1"],
   },
 ];
+
+export const budgetSummary: BudgetSummary = {
+  year: 2026,
+  totalAllocated: 2400,
+  categories: [
+    {
+      id: "budget-activities",
+      name: "Activities",
+      allocated: 900,
+      spent: 420,
+      pending: 120,
+    },
+    {
+      id: "budget-service",
+      name: "Service",
+      allocated: 650,
+      spent: 185,
+      pending: 75,
+    },
+    {
+      id: "budget-lessons",
+      name: "Lessons and supplies",
+      allocated: 350,
+      spent: 90,
+      pending: 0,
+    },
+    {
+      id: "budget-admin",
+      name: "Admin and printing",
+      allocated: 500,
+      spent: 210,
+      pending: 45,
+    },
+  ],
+};
 
 export const signupForms: SignupForm[] = [
   {
