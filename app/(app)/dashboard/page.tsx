@@ -7,6 +7,7 @@ import {
   Megaphone,
 } from "lucide-react";
 import { PageHeading } from "@/components/page-heading";
+import { DashboardOperations } from "@/components/dashboard-operations";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -157,74 +158,11 @@ export default function DashboardPage() {
         </Card>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle>EQ Leadership</CardTitle>
-            <CardDescription>Role-owned work across the presidency.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            {leadershipRoles.map((role) => {
-              const roleAssignments = assignments.filter((item) => item.ownerRole === role.id);
-              const roleAgenda = agendaItems.filter((item) => item.ownerRole === role.id);
-
-              return (
-                <div key={role.id} className="rounded-md border p-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-medium">{role.navLabel} · {role.person}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {role.responsibilities.join(", ")}
-                      </p>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      {roleAssignments.length + roleAgenda.length}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Assignments</CardTitle>
-            <CardDescription>Action items needing ownership.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            {assignments.map((item) => (
-              <div key={item.id} className="flex items-start justify-between gap-3 rounded-md border p-3">
-                <div>
-                  <p className="font-medium">{item.title}</p>
-                  <p className="text-sm text-muted-foreground">{item.owner} · due {item.dueDate}</p>
-                </div>
-                <StatusBadge status={item.status} />
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Meeting agenda</CardTitle>
-            <CardDescription>Current and carried-over agenda items.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            {agendaItems.slice(0, 4).map((item) => (
-              <div key={item.id} className="rounded-md border p-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-medium">{item.title}</p>
-                    <p className="text-sm text-muted-foreground">{item.responsibility}</p>
-                  </div>
-                  <StatusBadge status={item.status} />
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </section>
+      <DashboardOperations
+        initialAssignments={assignments}
+        agendaItems={agendaItems}
+        leadershipRoles={leadershipRoles}
+      />
 
       <section className="grid gap-4 lg:grid-cols-2">
         <Card>
