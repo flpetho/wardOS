@@ -30,6 +30,8 @@ export type LeadershipRole = {
   calling: string;
   summary: string;
   responsibilities: string[];
+  handbookFocus: string[];
+  guardrails: string[];
 };
 
 export type Lesson = {

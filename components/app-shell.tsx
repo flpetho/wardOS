@@ -11,21 +11,35 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
-import { workspace } from "@/lib/data";
+import { leadershipRoles, workspace } from "@/lib/data";
 
-const navGroups = [
+type NavItem = {
+  href: string;
+  label: string;
+  description?: string;
+  icon: React.ComponentType;
+};
+
+const leadershipIcons = {
+  eqp: Crown,
+  eq1: Users,
+  eq2: Users,
+  eqs: ClipboardList,
+};
+
+const navGroups: { label: string; items: NavItem[] }[] = [
   {
     label: "Command",
     items: [{ href: "/dashboard", label: "Dashboard", icon: Home }],
   },
   {
     label: "EQ Leadership",
-    items: [
-      { href: "/leadership/eqp", label: "EQP", icon: Crown },
-      { href: "/leadership/eq1", label: "EQ1", icon: Users },
-      { href: "/leadership/eq2", label: "EQ2", icon: Users },
-      { href: "/leadership/eqs", label: "EQS", icon: ClipboardList },
-    ],
+    items: leadershipRoles.map((role) => ({
+      href: `/leadership/${role.id}`,
+      label: role.person,
+      description: role.calling,
+      icon: leadershipIcons[role.id],
+    })),
   },
   {
     label: "Work Areas",
@@ -61,14 +75,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {group.label}
               </p>
               {group.items.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
-                >
-                  <item.icon />
-                  {item.label}
-                </Link>
+                <NavLink key={item.href} item={item} />
               ))}
             </div>
           ))}
@@ -100,7 +107,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   className="flex shrink-0 items-center gap-2 rounded-md border bg-card px-3 py-2 text-sm"
                 >
                   <item.icon />
-                  {item.label}
+                  <span className="flex flex-col leading-tight">
+                    <span>{item.label}</span>
+                    {item.description ? (
+                      <span className="text-xs text-muted-foreground">{item.description}</span>
+                    ) : null}
+                  </span>
                 </Link>
               ))}
           </nav>
@@ -110,5 +122,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </main>
       </div>
     </div>
+  );
+}
+
+function NavLink({
+  item,
+}: {
+  item: NavItem;
+}) {
+  return (
+    <Link
+      href={item.href}
+      className="flex min-h-10 items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+    >
+      <item.icon />
+      <span className="flex min-w-0 flex-col leading-tight">
+        <span className="truncate">{item.label}</span>
+        {item.description ? (
+          <span className="truncate text-xs font-normal text-muted-foreground">
+            {item.description}
+          </span>
+        ) : null}
+      </span>
+    </Link>
   );
 }

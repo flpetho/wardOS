@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { ClipboardList, NotebookTabs, Plus } from "lucide-react";
+import { ClipboardList, NotebookTabs, Plus, ShieldCheck } from "lucide-react";
 import { PageHeading } from "@/components/page-heading";
 import { StatusBadge } from "@/components/status-badge";
 import { Badge } from "@/components/ui/badge";
@@ -38,7 +38,7 @@ export default async function LeadershipPage({
   return (
     <>
       <PageHeading
-        title={`${role.navLabel} · ${role.title}`}
+        title={`${role.person} · ${role.title}`}
         description={`${role.person} · ${role.summary}`}
         action={
           <div className="flex gap-2">
@@ -58,7 +58,7 @@ export default async function LeadershipPage({
         <Card>
           <CardHeader>
             <CardTitle>Calling scope</CardTitle>
-            <CardDescription>Responsibilities currently attached to this role.</CardDescription>
+            <CardDescription>Responsibilities currently attached to this calling.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             {role.responsibilities.map((responsibility) => (
@@ -71,15 +71,23 @@ export default async function LeadershipPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Role snapshot</CardTitle>
-            <CardDescription>Everything assigned to this leadership role.</CardDescription>
+            <CardTitle>Handbook-informed focus</CardTitle>
+            <CardDescription>Operational interpretation for wardOS, not a policy substitute.</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-3 sm:grid-cols-3">
-            <Metric label="Active items" value={String(activeCount)} />
-            <Metric label="Agenda items" value={String(work.agendaItems.length)} />
-            <Metric label="Assignments" value={String(work.assignments.length)} />
+          <CardContent className="flex flex-col gap-3">
+            {role.handbookFocus.map((focus) => (
+              <div key={focus} className="rounded-md border p-3 text-sm">
+                {focus}
+              </div>
+            ))}
           </CardContent>
         </Card>
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-3">
+        <Metric label="Active items" value={String(activeCount)} />
+        <Metric label="Agenda items" value={String(work.agendaItems.length)} />
+        <Metric label="Assignments" value={String(work.assignments.length)} />
       </section>
 
       <section className="grid gap-4 xl:grid-cols-2">
@@ -164,18 +172,19 @@ export default async function LeadershipPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Operating notes</CardTitle>
-            <CardDescription>Lightweight role context for presidency meetings.</CardDescription>
+            <CardTitle>Guardrails</CardTitle>
+            <CardDescription>Boundaries for keeping wardOS operational rather than pastoral.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3 text-sm">
             <div className="flex items-center gap-2">
-              <ClipboardList />
-              <p className="font-medium">Bring to next meeting</p>
+              <ShieldCheck />
+              <p className="font-medium">Keep out of wardOS</p>
             </div>
-            <p className="text-muted-foreground">
-              Review open assignments, decide which agenda items should carry over, and add
-              any new role-specific items before the next bi-monthly meeting.
-            </p>
+            {role.guardrails.map((guardrail) => (
+              <p key={guardrail} className="rounded-md border p-3 text-muted-foreground">
+                {guardrail}
+              </p>
+            ))}
             <div className="flex flex-wrap gap-2">
               {role.responsibilities.map((responsibility) => (
                 <Badge key={responsibility} variant="outline">
@@ -186,16 +195,56 @@ export default async function LeadershipPage({
           </CardContent>
         </Card>
       </section>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Bring to next presidency meeting</CardTitle>
+          <CardDescription>
+            A lightweight checklist for keeping this calling connected to agenda and follow-up.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-3">
+          <div className="rounded-md border p-3 text-sm">
+            <div className="flex items-center gap-2 font-medium">
+              <ClipboardList />
+              Review role-owned assignments
+            </div>
+            <p className="mt-2 text-muted-foreground">
+              Decide what is complete, waiting, or should become a carried-over item.
+            </p>
+          </div>
+          <div className="rounded-md border p-3 text-sm">
+            <div className="flex items-center gap-2 font-medium">
+              <NotebookTabs />
+              Add agenda items
+            </div>
+            <p className="mt-2 text-muted-foreground">
+              Capture operational questions before the bi-monthly presidency meeting.
+            </p>
+          </div>
+          <div className="rounded-md border p-3 text-sm">
+            <div className="flex items-center gap-2 font-medium">
+              <ShieldCheck />
+              Check sensitivity
+            </div>
+            <p className="mt-2 text-muted-foreground">
+              Link out or summarize operationally when details become personal or confidential.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     </>
   );
 }
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border p-3">
+    <Card>
+      <CardContent className="p-4">
       <p className="text-sm text-muted-foreground">{label}</p>
       <p className="mt-1 text-2xl font-semibold">{value}</p>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
