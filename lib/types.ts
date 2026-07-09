@@ -151,3 +151,12 @@ export type BudgetSummary = {
   totalAllocated: number;
   categories: BudgetCategory[];
 };
+
+export type WardOrganization = {
+  id: string;
+  name: string;
+  shortName: string;
+  status: "Active" | "Planned" | "Later";
+  leaderPlaceholder: string;
+  description: string;
+};

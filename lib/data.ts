@@ -11,6 +11,7 @@ import type {
   ServiceOpportunity,
   SignupForm,
   SundayProgram,
+  WardOrganization,
 } from "@/lib/types";
 
 export const workspace = {
@@ -396,6 +397,57 @@ export const budgetSummary: BudgetSummary = {
     },
   ],
 };
+
+export const wardOrganizations: WardOrganization[] = [
+  {
+    id: "elders-quorum",
+    name: "Elders Quorum",
+    shortName: "EQ",
+    status: "Active",
+    leaderPlaceholder: "Nathan Placeholder",
+    description: "Current operating workspace for presidency work, meetings, assignments, service, and Sunday readiness.",
+  },
+  {
+    id: "relief-society",
+    name: "Relief Society",
+    shortName: "RS",
+    status: "Planned",
+    leaderPlaceholder: "Relief Society President",
+    description: "Future operating view for Relief Society presidency coordination and shared ward work.",
+  },
+  {
+    id: "young-men",
+    name: "Young Men",
+    shortName: "YM",
+    status: "Planned",
+    leaderPlaceholder: "Young Men President",
+    description: "Future youth leadership coordination and activities view.",
+  },
+  {
+    id: "young-women",
+    name: "Young Women",
+    shortName: "YW",
+    status: "Planned",
+    leaderPlaceholder: "Young Women President",
+    description: "Future youth leadership coordination and activities view.",
+  },
+  {
+    id: "primary",
+    name: "Primary",
+    shortName: "Primary",
+    status: "Planned",
+    leaderPlaceholder: "Primary President",
+    description: "Future Primary presidency planning and operational coordination.",
+  },
+  {
+    id: "bishopric",
+    name: "Bishopric Master View",
+    shortName: "Bishopric",
+    status: "Later",
+    leaderPlaceholder: "Bishopric",
+    description: "Future master view across organizations, with strict boundaries around confidential bishopric matters.",
+  },
+];
 
 export const signupForms: SignupForm[] = [
   {

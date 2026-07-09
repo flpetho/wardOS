@@ -3,11 +3,13 @@ import {
   CalendarDays,
   ClipboardList,
   Crown,
+  DollarSign,
   HandHeart,
   Home,
   LinkIcon,
   Megaphone,
   NotebookTabs,
+  Settings,
   Sparkles,
   Users,
 } from "lucide-react";
@@ -48,6 +50,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
       { href: "/lessons", label: "Lessons", icon: CalendarDays },
       { href: "/service", label: "Service", icon: HandHeart },
       { href: "/cleaning", label: "Cleaning", icon: Sparkles },
+      { href: "/budget", label: "Budget", icon: DollarSign },
       { href: "/program", label: "Program", icon: Megaphone },
       { href: "/signups", label: "Signups", icon: Users },
       { href: "/sources", label: "Sources", icon: LinkIcon },
@@ -80,11 +83,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           ))}
         </nav>
-        <div className="mt-auto rounded-lg border bg-background p-3 text-sm">
+        <div className="mt-auto flex flex-col gap-3">
+          <NavLink
+            item={{
+              href: "/admin",
+              label: "Admin",
+              description: "Ward settings",
+              icon: Settings,
+            }}
+          />
+          <div className="rounded-lg border bg-background p-3 text-sm">
           <p className="font-medium">Local prototype</p>
           <p className="mt-1 text-muted-foreground">
             Seeded data now. Clerk and Supabase are wired by env when ready.
           </p>
+          </div>
         </div>
       </aside>
       <div className="lg:pl-64">
@@ -100,6 +113,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <nav className="mt-3 flex gap-2 overflow-x-auto pb-1">
             {navGroups
               .flatMap((group) => group.items)
+              .concat([{ href: "/admin", label: "Admin", description: "Ward settings", icon: Settings }])
               .map((item) => (
                 <Link
                   key={item.href}

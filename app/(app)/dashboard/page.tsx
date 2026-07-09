@@ -7,6 +7,7 @@ import {
   Megaphone,
 } from "lucide-react";
 import { PageHeading } from "@/components/page-heading";
+import { DashboardCalendar, type CalendarEvent } from "@/components/dashboard-calendar";
 import { DashboardOperations } from "@/components/dashboard-operations";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import {
   budgetSummary,
   cleaningAssignments,
   leadershipRoles,
+  meetings,
   lessons,
   serviceOpportunities,
   sundayProgram,
@@ -29,6 +31,7 @@ export default function DashboardPage() {
   const budgetSpent = budgetSummary.categories.reduce((sum, item) => sum + item.spent, 0);
   const budgetPending = budgetSummary.categories.reduce((sum, item) => sum + item.pending, 0);
   const budgetRemaining = budgetSummary.totalAllocated - budgetSpent - budgetPending;
+  const calendarEvents = buildCalendarEvents();
 
   return (
     <>
@@ -89,74 +92,7 @@ export default function DashboardPage() {
         </Card>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Budget</CardTitle>
-            <CardDescription>
-              Operational view of the {budgetSummary.year} quorum budget.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Remaining after spent and pending</p>
-              <p className="mt-1 text-3xl font-semibold">{formatCurrency(budgetRemaining)}</p>
-            </div>
-            <div className="grid gap-3 text-sm sm:grid-cols-3">
-              <div className="rounded-md border p-3">
-                <p className="text-muted-foreground">Allocated</p>
-                <p className="font-medium">{formatCurrency(budgetSummary.totalAllocated)}</p>
-              </div>
-              <div className="rounded-md border p-3">
-                <p className="text-muted-foreground">Spent</p>
-                <p className="font-medium">{formatCurrency(budgetSpent)}</p>
-              </div>
-              <div className="rounded-md border p-3">
-                <p className="text-muted-foreground">Pending</p>
-                <p className="font-medium">{formatCurrency(budgetPending)}</p>
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Keep reimbursements and confidential financial assistance outside wardOS.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Budget categories</CardTitle>
-            <CardDescription>Spending progress by operating area.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            {budgetSummary.categories.map((category) => {
-              const committed = category.spent + category.pending;
-              const percent = Math.min(Math.round((committed / category.allocated) * 100), 100);
-
-              return (
-                <div key={category.id} className="rounded-md border p-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-medium">{category.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {formatCurrency(committed)} committed of {formatCurrency(category.allocated)}
-                      </p>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      {formatCurrency(category.allocated - committed)} left
-                    </span>
-                  </div>
-                  <div className="mt-3 h-2 rounded-full bg-muted">
-                    <div
-                      className="h-2 rounded-full bg-primary"
-                      style={{ width: `${percent}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
-      </section>
+      <DashboardCalendar initialEvents={calendarEvents} />
 
       <DashboardOperations
         initialAssignments={assignments}
@@ -207,14 +143,6 @@ export default function DashboardPage() {
   );
 }
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
 function SummaryCard({
   title,
   value,
@@ -238,4 +166,53 @@ function SummaryCard({
       </CardContent>
     </Card>
   );
+}
+
+function buildCalendarEvents(): CalendarEvent[] {
+  return [
+    ...lessons.map((lesson) => ({
+      id: lesson.id,
+      date: lesson.date,
+      title: lesson.topic,
+      kind: "Lesson" as const,
+    })),
+    ...assignments.map((assignment) => ({
+      id: assignment.id,
+      date: assignment.dueDate,
+      title: assignment.title,
+      kind: "Assignment" as const,
+    })),
+    ...serviceOpportunities.map((service) => ({
+      id: service.id,
+      date: service.date,
+      title: service.title,
+      kind: "Service" as const,
+    })),
+    ...cleaningAssignments.map((cleaning) => ({
+      id: cleaning.id,
+      date: cleaning.cleaningDate,
+      title: "Meetinghouse cleaning",
+      kind: "Cleaning" as const,
+    })),
+    ...meetings.map((meeting) => ({
+      id: meeting.id,
+      date: meeting.meetingDate,
+      title: meeting.title,
+      kind: "Meeting" as const,
+    })),
+    {
+      id: "program-current",
+      date: sundayProgram.programDate,
+      title: "Published Sunday program",
+      kind: "Program" as const,
+    },
+  ].sort((first, second) => first.date.localeCompare(second.date));
+}
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(value);
 }

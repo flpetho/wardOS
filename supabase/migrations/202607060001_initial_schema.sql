@@ -38,6 +38,18 @@ create table if not exists leadership_roles (
   unique (workspace_id, role_key)
 );
 
+create table if not exists ward_organizations (
+  id uuid primary key default gen_random_uuid(),
+  workspace_id uuid not null references workspaces(id) on delete cascade,
+  name text not null,
+  short_name text not null,
+  status text not null check (status in ('active', 'planned', 'later')),
+  leader_name text,
+  description text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists leadership_responsibilities (
   id uuid primary key default gen_random_uuid(),
   workspace_id uuid not null references workspaces(id) on delete cascade,
@@ -258,6 +270,7 @@ alter table workspaces enable row level security;
 alter table users enable row level security;
 alter table workspace_members enable row level security;
 alter table leadership_roles enable row level security;
+alter table ward_organizations enable row level security;
 alter table leadership_responsibilities enable row level security;
 alter table sources enable row level security;
 alter table lessons enable row level security;
