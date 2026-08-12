@@ -64,7 +64,7 @@ Not working today: nothing persists, nobody signs in, every "Add / Publish / Sta
 
   **Known deviations from the source:**
   - The two 24×24 icons are lucide `Clock`/`Radio`, **not** the exported Figma vectors.
-  - No seasonal hero artwork yet. `sundayProgram.heroImage` is `null`, which renders a marked placeholder full-bleed at the source's 393×440 ratio rather than collapsing — the space is part of the composition. To fill it: drop a file you have rights to in `img/`, import it as the temple photo is imported, and assign it.
+  - Hero artwork is the existing Gilbert Temple photo, reusing the same import as the temple rail rather than adding a second copy of a 4.6MB file. The source design used seasonal imagery; this is a stand-in the workspace actually owns. It is landscape and the slot is portrait, so `object-cover` keeps full height and crops the sides — the default centre crop keeps the spire and facade, no `object-position` tuning needed. Setting `heroImage: null` falls back to a marked placeholder at the same ratio.
   - No print stylesheet. "Bulletin" implies paper, but printing was never confirmed as a requirement.
   - The source Figma frame contains three variants at identical coordinates and renders blank above ~1,400px; the December 15 variant was used as canonical.
 

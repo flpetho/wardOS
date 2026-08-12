@@ -324,12 +324,13 @@ export const sundayProgram: SundayProgram = {
   programDate: "2026-07-12",
   status: "published",
   /*
-    Full-bleed seasonal artwork, 393x440 in the source design. To set it: drop
-    a file you have rights to in `img/`, import it at the top of this file the
-    way the temple photo is imported, and assign it here. Null renders a marked
-    placeholder at the same ratio.
+    Full-bleed artwork, 393x440 in the source design, which used seasonal
+    imagery. Standing in with the temple photo the workspace already owns —
+    reusing the same import rather than adding a second copy of a 4.6MB file.
+    It is landscape and the slot is portrait, so object-cover keeps the full
+    height and crops the sides. Set to null to fall back to a marked placeholder.
   */
-  heroImage: null,
+  heroImage: gilbertTemplePhoto,
   presiding: "Bishop Nathan Cole",
   conducting: "Brother Ethan Ward",
   chorister: "Sister Amy Placeholder",
