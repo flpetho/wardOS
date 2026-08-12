@@ -149,7 +149,8 @@ export default async function PublicProgramPage({
 function Bulletin({ children }: { children: React.ReactNode }) {
   return (
     <main className="min-h-screen bg-white" style={{ color: INK }}>
-      <div className="mx-auto w-full max-w-[393px] px-[29px] pt-14">{children}</div>
+      {/* Top margin matches the source design, where the masthead sits at y=100. */}
+      <div className="mx-auto w-full max-w-[393px] px-[29px] pt-[100px]">{children}</div>
     </main>
   );
 }
