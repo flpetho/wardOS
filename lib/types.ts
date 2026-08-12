@@ -199,22 +199,51 @@ export type SignupForm = {
 
 export type ProgramStatus = "draft" | "ready_for_review" | "published" | "archived";
 
+/** Hymn number and title are set in different weights, so they are separate data. */
+export type Hymn = { number: string; title: string };
+
+/**
+ * The middle of a sacrament meeting is the only part that genuinely varies:
+ * speakers, hymns, and musical numbers interleave in an order the presidency
+ * chooses. A flat set of named fields cannot express that sequence, so it is
+ * a list. Everything around it is fixed by convention and stays named.
+ */
+export type ProgramSlot =
+  | { kind: "speaker"; name: string }
+  | { kind: "hymn"; label: string; hymn: Hymn }
+  | { kind: "musical"; description: string };
+
+export type ProgramAnnouncement = {
+  id: string;
+  title: string;
+  body: string;
+  linkUrl?: string;
+  linkLabel?: string;
+};
+
 export type SundayProgram = {
   programDate: string;
   status: ProgramStatus;
   presiding: string;
   conducting: string;
-  openingHymn: string;
+  chorister: string;
+  organist: string;
+  openingHymn: Hymn;
   openingPrayer: string;
   wardBusiness: string;
-  sacramentHymn: string;
-  speakers: string[];
-  intermediateHymn: string;
-  closingHymn: string;
+  sacramentHymn: Hymn;
+  speakingOrder: ProgramSlot[];
+  closingHymn: Hymn;
   closingPrayer: string;
-  announcements: string[];
+  announcements: ProgramAnnouncement[];
   upcomingEvents: string[];
   lessonSchedule: string;
+};
+
+/** Standing ward information printed on every bulletin. Not per-program data. */
+export type WardMeetingInfo = {
+  scheduleNote: string;
+  broadcastNote: string;
 };
 
 export type Meeting = {

@@ -11,6 +11,15 @@ export function cn(...inputs: ClassValue[]) {
   the ambient timezone renders a different day either side of the hydration
   boundary for anyone west of Greenwich.
 */
+/*
+  Flattens a hymn for the internal views. The public bulletin deliberately does
+  NOT use this — it sets the number and title in different weights, which is why
+  they are stored separately in the first place.
+*/
+export function formatHymn(hymn: { number: string; title: string }) {
+  return `#${hymn.number} / ${hymn.title}`;
+}
+
 export function formatDate(iso: string, options?: Intl.DateTimeFormatOptions) {
   return new Intl.DateTimeFormat("en-US", {
     timeZone: "UTC",

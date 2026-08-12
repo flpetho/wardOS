@@ -18,6 +18,7 @@ import {
   type SignupForm,
   type SundayProgram,
   type TempleInfo,
+  type WardMeetingInfo,
   type WardOrganization,
 } from "@/lib/types";
 
@@ -311,22 +312,52 @@ export const signupForms: SignupForm[] = [
   },
 ];
 
+/** Standing information, printed on every bulletin rather than entered weekly. */
+export const wardMeetingInfo: WardMeetingInfo = {
+  scheduleNote:
+    "Please join us every Sunday at 9:00 a.m. in person at the Oak Hills meetinghouse, 1400 North Oak Hills Drive.",
+  broadcastNote:
+    "If you are ill or unable to join us in person, please contact a member of the bishopric to request a link to the broadcast.",
+};
+
 export const sundayProgram: SundayProgram = {
   programDate: "2026-07-12",
   status: "published",
   presiding: "Bishop Nathan Cole",
   conducting: "Brother Ethan Ward",
-  openingHymn: "Hymn 85 - How Firm a Foundation",
+  chorister: "Sister Amy Placeholder",
+  organist: "Sister Ruth Placeholder",
+  openingHymn: { number: "85", title: "How Firm a Foundation" },
   openingPrayer: "By invitation",
-  wardBusiness: "Sustaining and releases as needed",
-  sacramentHymn: "Hymn 193 - I Stand All Amazed",
-  speakers: ["Sister Lauren Hayes", "Brother Daniel Kim"],
-  intermediateHymn: "Youth musical number",
-  closingHymn: "Hymn 220 - Lord, I Would Follow Thee",
+  wardBusiness: "Sustainings and releases as needed",
+  sacramentHymn: { number: "193", title: "I Stand All Amazed" },
+  speakingOrder: [
+    { kind: "speaker", name: "Sister Lauren Hayes" },
+    { kind: "musical", description: "Youth musical number" },
+    { kind: "speaker", name: "Brother Daniel Kim" },
+  ],
+  closingHymn: { number: "220", title: "Lord, I Would Follow Thee" },
   closingPrayer: "By invitation",
   announcements: [
-    "Ward service project next Saturday morning.",
-    "Temple recommend interviews are available after the block.",
+    {
+      id: "ann-1",
+      title: "Ward service project",
+      body: "Next Saturday morning at the Porter home. Bring gloves and a truck if you have one. Meet at the meetinghouse at 8:00 a.m. to carpool.",
+      linkUrl: "/signup/move-assistance",
+      linkLabel: "Sign up",
+    },
+    {
+      id: "ann-2",
+      title: "Temple recommend interviews",
+      body: "Available after the block in the bishop's office. No appointment needed — see the executive secretary to be added to the list.",
+    },
+    {
+      id: "ann-3",
+      title: "Meetinghouse cleaning",
+      body: "Saturday July 25 at 8:00 a.m. Four families are needed. Please sign up if your family is able to help this rotation.",
+      linkUrl: "/signup/july-11-cleaning",
+      linkLabel: "Sign up",
+    },
   ],
   upcomingEvents: [
     "Jul 18 - Move assistance service project",

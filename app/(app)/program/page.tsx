@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { formatHymn } from "@/lib/utils";
 import { sundayProgram, workspace } from "@/lib/data";
 
 export default function ProgramPage() {
@@ -44,12 +45,18 @@ export default function ProgramPage() {
             <Field label="Date" value={sundayProgram.programDate} />
             <Field label="Conducting" value={sundayProgram.conducting} />
             <Field label="Presiding" value={sundayProgram.presiding} />
-            <Field label="Opening hymn" value={sundayProgram.openingHymn} />
-            <Field label="Sacrament hymn" value={sundayProgram.sacramentHymn} />
-            <Field label="Closing hymn" value={sundayProgram.closingHymn} />
+            <Field label="Chorister" value={sundayProgram.chorister} />
+            <Field label="Organist" value={sundayProgram.organist} />
+            <Field label="Opening hymn" value={formatHymn(sundayProgram.openingHymn)} />
+            <Field label="Sacrament hymn" value={formatHymn(sundayProgram.sacramentHymn)} />
+            <Field label="Closing hymn" value={formatHymn(sundayProgram.closingHymn)} />
             <div className="sm:col-span-2">
               <label className="text-sm font-medium">Announcements</label>
-              <Textarea defaultValue={sundayProgram.announcements.join("\n")} />
+              <Textarea
+                defaultValue={sundayProgram.announcements
+                  .map((item) => `${item.title}: ${item.body}`)
+                  .join("\n\n")}
+              />
             </div>
           </CardContent>
         </Card>
@@ -59,12 +66,18 @@ export default function ProgramPage() {
             <CardDescription>Only published content appears publicly.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3 text-sm">
-            <p className="font-medium">Speakers</p>
-            <ul className="flex flex-col gap-2 text-muted-foreground">
-              {sundayProgram.speakers.map((speaker) => (
-                <li key={speaker}>{speaker}</li>
+            <p className="font-medium">Speaking order</p>
+            <ol className="flex flex-col gap-2 text-muted-foreground">
+              {sundayProgram.speakingOrder.map((slot, index) => (
+                <li key={`${slot.kind}-${index}`}>
+                  {slot.kind === "speaker"
+                    ? slot.name
+                    : slot.kind === "musical"
+                      ? slot.description
+                      : formatHymn(slot.hymn)}
+                </li>
               ))}
-            </ul>
+            </ol>
             <p className="mt-2 font-medium">Lesson schedule</p>
             <p className="text-muted-foreground">{sundayProgram.lessonSchedule}</p>
           </CardContent>

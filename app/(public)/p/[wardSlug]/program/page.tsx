@@ -1,8 +1,26 @@
 import Link from "next/link";
-import { CalendarDays, MapPin } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { sundayProgram, workspace } from "@/lib/data";
+import { notFound } from "next/navigation";
+import { Clock, Radio } from "lucide-react";
+import { formatDate } from "@/lib/utils";
+import { sundayProgram, wardMeetingInfo, workspace } from "@/lib/data";
+import type { Hymn, ProgramSlot } from "@/lib/types";
+
+/*
+  The Sunday bulletin. This is the only surface in wardOS that is not an
+  operations tool — a ward member who scanned a QR code in the foyer, reading
+  on a phone. It is Read mode, so it carries its own typographic identity
+  rather than the dashboard's.
+
+  Built to the Ward Program Figma design. Set in DM Sans by the owner's choice
+  (the source design uses Aktiv Grotesk); the Medium/Light weight pairing that
+  the design depends on maps onto DM Sans 500/300.
+
+  Ink is a single warm olive at two weights — the apparent lightness of values
+  is weight, not colour. The two-part rule (short heavy dash, long hairline) is
+  the design's signature and is reused for every section break.
+*/
+
+const INK = "#404231";
 
 export default async function PublicProgramPage({
   params,
@@ -10,91 +28,223 @@ export default async function PublicProgramPage({
   params: Promise<{ wardSlug: string }>;
 }) {
   const { wardSlug } = await params;
-  const isCurrentWard = wardSlug === workspace.slug;
+
+  // Previously this rendered the full program for ANY slug and ANY status.
+  if (wardSlug !== workspace.slug) {
+    notFound();
+  }
+
+  const program = sundayProgram;
+
+  if (program.status !== "published") {
+    return (
+      <Bulletin>
+        <Masthead date={program.programDate} />
+        <p className="mt-10 text-[13px] font-light leading-relaxed">
+          This week&rsquo;s program has not been published yet. Please check back closer to
+          Sunday.
+        </p>
+      </Bulletin>
+    );
+  }
 
   return (
-    <main className="min-h-screen bg-background px-4 py-6">
-      <div className="mx-auto flex max-w-3xl flex-col gap-5">
-        <header className="rounded-lg border bg-card p-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <p className="text-sm font-medium text-primary">{workspace.name}</p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-normal">Sunday Program</h1>
-              <div className="mt-3 flex flex-wrap gap-3 text-sm text-muted-foreground">
-                <span className="inline-flex items-center gap-2">
-                  <CalendarDays />
-                  {sundayProgram.programDate}
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <MapPin />
-                  Sacrament meeting
-                </span>
-              </div>
-            </div>
-            <Badge variant={isCurrentWard ? "default" : "warning"}>
-              {isCurrentWard ? sundayProgram.status : "Unknown ward"}
-            </Badge>
-          </div>
-        </header>
+    <Bulletin>
+      <Masthead date={program.programDate} />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Meeting order</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3 text-sm">
-            <ProgramRow label="Presiding" value={sundayProgram.presiding} />
-            <ProgramRow label="Conducting" value={sundayProgram.conducting} />
-            <ProgramRow label="Opening hymn" value={sundayProgram.openingHymn} />
-            <ProgramRow label="Opening prayer" value={sundayProgram.openingPrayer} />
-            <ProgramRow label="Ward business" value={sundayProgram.wardBusiness} />
-            <ProgramRow label="Sacrament hymn" value={sundayProgram.sacramentHymn} />
-            <ProgramRow label="Speakers" value={sundayProgram.speakers.join(", ")} />
-            <ProgramRow label="Musical number" value={sundayProgram.intermediateHymn} />
-            <ProgramRow label="Closing hymn" value={sundayProgram.closingHymn} />
-            <ProgramRow label="Closing prayer" value={sundayProgram.closingPrayer} />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Announcements</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="flex flex-col gap-2 text-sm text-muted-foreground">
-              {sundayProgram.announcements.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Upcoming</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="flex flex-col gap-2 text-sm text-muted-foreground">
-              {sundayProgram.upcomingEvents.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-            <p className="mt-4 rounded-md bg-muted p-3 text-sm">{sundayProgram.lessonSchedule}</p>
-          </CardContent>
-        </Card>
-
-        <footer className="pb-6 text-center text-sm text-muted-foreground">
-          <Link href="/dashboard">wardOS internal dashboard</Link>
-        </footer>
+      <div className="mt-7 grid grid-cols-2 gap-x-6 gap-y-2">
+        <MeetingNote icon={<Clock />} text={wardMeetingInfo.scheduleNote} />
+        <MeetingNote icon={<Radio />} text={wardMeetingInfo.broadcastNote} />
       </div>
+
+      {/*
+        Seasonal artwork sits here in the source design, full-bleed at roughly
+        4:3. No asset supplied yet; the layout closes up cleanly without it.
+      */}
+
+      <SectionHeading>Sacrament Meeting:</SectionHeading>
+
+      <div className="flex flex-col gap-[22px]">
+        <Group>
+          <Row label="Presiding" value={program.presiding} />
+          <Row label="Conducting" value={program.conducting} />
+          <Row label="Chorister" value={program.chorister} />
+          <Row label="Organist" value={program.organist} />
+        </Group>
+
+        <SubHeading>Announcements</SubHeading>
+
+        <Group>
+          <HymnRow label="Opening Hymn" hymn={program.openingHymn} />
+          <Row label="Opening Prayer" value={program.openingPrayer} />
+        </Group>
+
+        <SubHeading>Ward and Stake Business</SubHeading>
+        {program.wardBusiness ? (
+          <p className="-mt-[14px] text-[13px] font-light tracking-[-0.03em]">
+            {program.wardBusiness}
+          </p>
+        ) : null}
+
+        <Group>
+          <HymnRow label="Sacrament Hymn" hymn={program.sacramentHymn} />
+        </Group>
+
+        <SubHeading>Administration of the Sacrament</SubHeading>
+
+        <Group>
+          {program.speakingOrder.map((slot, index) => (
+            <SlotRow key={`${slot.kind}-${index}`} slot={slot} />
+          ))}
+        </Group>
+
+        <Group>
+          <HymnRow label="Closing Hymn" hymn={program.closingHymn} />
+          <Row label="Closing Prayer" value={program.closingPrayer} />
+        </Group>
+      </div>
+
+      <SectionHeading>Announcements:</SectionHeading>
+
+      <div className="flex flex-col gap-7">
+        {program.announcements.map((announcement) => (
+          <div key={announcement.id}>
+            <p className="text-[13px] font-medium tracking-[-0.03em]">
+              {announcement.title}:
+            </p>
+            <p className="mt-1 text-[13px] font-light leading-[1.55] opacity-75">
+              {announcement.body}
+            </p>
+            {announcement.linkUrl ? (
+              <Link
+                href={announcement.linkUrl}
+                className="mt-3 inline-flex items-center rounded-full border px-4 py-1.5 text-[12px] font-medium underline underline-offset-2 transition-opacity hover:opacity-70"
+                style={{ borderColor: INK }}
+              >
+                {announcement.linkLabel ?? "Open"}
+              </Link>
+            ) : null}
+          </div>
+        ))}
+      </div>
+
+      {program.upcomingEvents.length ? (
+        <>
+          <SectionHeading>Coming Up:</SectionHeading>
+          <ul className="flex flex-col gap-2">
+            {program.upcomingEvents.map((event) => (
+              <li key={event} className="text-[13px] font-light tracking-[-0.03em]">
+                {event}
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
+
+      <footer className="mt-14 pb-10 text-[12px] font-light opacity-60">
+        {workspace.name}
+      </footer>
+    </Bulletin>
+  );
+}
+
+function Bulletin({ children }: { children: React.ReactNode }) {
+  return (
+    <main className="min-h-screen bg-white" style={{ color: INK }}>
+      <div className="mx-auto w-full max-w-[393px] px-[29px] pt-14">{children}</div>
     </main>
   );
 }
 
-function ProgramRow({ label, value }: { label: string; value: string }) {
+function Masthead({ date }: { date: string }) {
   return (
-    <div className="grid gap-1 rounded-md border p-3 sm:grid-cols-[160px_1fr]">
-      <p className="font-medium">{label}</p>
-      <p className="text-muted-foreground">{value}</p>
+    <header>
+      <h1 className="text-[30px] font-medium leading-[1.12] tracking-[-0.035em]">
+        {workspace.name}
+        <br />
+        Sunday Bulletin
+      </h1>
+      <p className="mt-2 text-[14px] font-light tracking-[-0.02em] opacity-70">
+        <time dateTime={date}>
+          {formatDate(date, { month: "long", day: "numeric", year: "numeric" })}
+        </time>
+      </p>
+    </header>
+  );
+}
+
+function MeetingNote({ icon, text }: { icon: React.ReactNode; text: string }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="[&>svg]:size-[18px]" aria-hidden>
+        {icon}
+      </span>
+      <p className="text-[11px] font-light leading-[1.45] opacity-75">{text}</p>
     </div>
   );
+}
+
+/* The design's signature: a short heavy dash, then a long hairline. */
+function Rule() {
+  return (
+    <div className="flex items-center" aria-hidden>
+      <span className="h-[3px] w-[18px]" style={{ backgroundColor: INK }} />
+      <span className="h-px flex-1" style={{ backgroundColor: INK, opacity: 0.25 }} />
+    </div>
+  );
+}
+
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <h2 className="mt-14 text-[26px] font-medium tracking-[-0.035em]">{children}</h2>
+      <div className="mb-6 mt-5">
+        <Rule />
+      </div>
+    </>
+  );
+}
+
+function SubHeading({ children }: { children: React.ReactNode }) {
+  return <h3 className="text-[16px] font-medium tracking-[-0.03em]">{children}</h3>;
+}
+
+/* Labels size to the widest label in their own group, as in the source design. */
+function Group({ children }: { children: React.ReactNode }) {
+  return (
+    <dl className="grid grid-cols-[max-content_1fr] gap-x-6 gap-y-[5px] text-[13px] tracking-[-0.03em]">
+      {children}
+    </dl>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <>
+      <dt className="font-medium">{label}:</dt>
+      <dd className="font-light">{value}</dd>
+    </>
+  );
+}
+
+function HymnRow({ label, hymn }: { label: string; hymn: Hymn }) {
+  return (
+    <>
+      <dt className="font-medium">{label}:</dt>
+      <dd>
+        <span className="font-medium">#{hymn.number}</span>{" "}
+        <span className="font-light">/ {hymn.title}</span>
+      </dd>
+    </>
+  );
+}
+
+function SlotRow({ slot }: { slot: ProgramSlot }) {
+  if (slot.kind === "speaker") {
+    return <Row label="Speaker" value={slot.name} />;
+  }
+  if (slot.kind === "musical") {
+    return <Row label="Musical Number" value={slot.description} />;
+  }
+  return <HymnRow label={slot.label} hymn={slot.hymn} />;
 }

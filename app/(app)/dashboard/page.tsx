@@ -5,7 +5,7 @@ import { DashboardCalendar, type CalendarEvent } from "@/components/dashboard-ca
 import { DashboardOperations } from "@/components/dashboard-operations";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatHymn } from "@/lib/utils";
 import {
   budgetSummary,
   cleaningAssignments,
@@ -81,8 +81,13 @@ export default function DashboardPage() {
               {currentLesson.teacher ? ` · taught by ${currentLesson.teacher}` : " · no teacher yet"}
             </span>
           </SundayRow>
-          <SundayRow label="Speakers">{sundayProgram.speakers.join(", ")}</SundayRow>
-          <SundayRow label="Opening hymn">{sundayProgram.openingHymn}</SundayRow>
+          <SundayRow label="Speakers">
+            {sundayProgram.speakingOrder
+              .filter((slot) => slot.kind === "speaker")
+              .map((slot) => slot.name)
+              .join(", ")}
+          </SundayRow>
+          <SundayRow label="Opening hymn">{formatHymn(sundayProgram.openingHymn)}</SundayRow>
           <SundayRow label="Conducting">{sundayProgram.conducting}</SundayRow>
           <SundayRow label="Program">
             <span className="inline-flex items-center gap-2.5">

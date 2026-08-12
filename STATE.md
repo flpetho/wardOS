@@ -52,6 +52,22 @@ Not working today: nothing persists, nobody signs in, every "Add / Publish / Sta
 
   All twelve consumer files were updated. Typecheck and build pass; every route returns 200.
 
+- **Public Sunday bulletin — built 2026-08-12** from the owner's `Ward-Program` Figma file (`DGbXfeBGOuRcNxJ5TvVDzD`, node `1:17`), read via the Figma MCP server.
+
+  This is the only surface in wardOS that is **Read** mode rather than Operate, so it deliberately carries its own typographic identity instead of the dashboard's. That does not contradict the brand commitment in `PRODUCT.md`, which was chosen for the app.
+
+  Design language taken from the source: a single warm-olive ink `#404231` at two weights (the apparent lightness of values is *weight*, not colour), 13px rows at −0.03em, 16px Medium sub-headings, a signature two-part rule (short heavy dash, long hairline), and a 393px phone-first frame.
+
+  **Typeface substituted:** the source is set in Aktiv Grotesk; the owner chose to stay on DM Sans, whose 500/300 map onto Aktiv's Medium/Light.
+
+  **The model had to grow**, because a flat field set cannot express a running order. `SundayProgram` now carries `chorister`, `organist`, hymns as `{ number, title }` (they are set in different weights), a `speakingOrder` list that interleaves speakers, hymns, and musical numbers, and structured `announcements` with optional links. Standing ward info moved to `wardMeetingInfo`.
+
+  **Known deviations from the source:**
+  - The two 24×24 icons are lucide `Clock`/`Radio`, **not** the exported Figma vectors.
+  - No seasonal hero artwork — the source has a full-bleed image and no asset was supplied. The layout closes up cleanly without it; the slot is marked in the component.
+  - No print stylesheet. "Bulletin" implies paper, but printing was never confirmed as a requirement.
+  - The source Figma frame contains three variants at identical coordinates and renders blank above ~1,400px; the December 15 variant was used as canonical.
+
 ## Next up
 
 Ordered by the core model agreed 2026-08-11. Read [`docs/plans/2026-08-11-mental-model-design.md`](docs/plans/2026-08-11-mental-model-design.md) before starting any of these.
@@ -99,7 +115,7 @@ Found in the 2026-08-11 review. All verified by running the app, not inferred. N
 ### Blocking deployment
 
 1. **No authentication whatsoever.** `proxy.ts:12-17` — both branches return `NextResponse.next()`. `/admin` and `/dashboard` return HTTP 200 with no credentials. Do not deploy until this is closed.
-2. **Public program page ignores ward slug and publish status.** `app/(public)/p/[wardSlug]/program/page.tsx:13` — `isCurrentWard` only swaps a badge; content renders for any slug. Verified: `/p/not-a-real-ward/program` returns the full program. No check on `status`, so a Draft program would be publicly visible. Violates `prd` §14.7.
+2. ~~**Public program page ignores ward slug and publish status.**~~ **Fixed 2026-08-12.** A mismatched slug now returns 404 (verified: `/p/not-a-real-ward/program` → 404, `/p/oak-hills/program` → 200), and an unpublished program renders a "not published yet" notice instead of the content. Satisfies `prd` §14.7.
 3. **Signup form does not gate on status.** `getSignupForm` ignores `status === "Open"`, so a closed form still renders and accepts submissions.
 
 ### Correctness
