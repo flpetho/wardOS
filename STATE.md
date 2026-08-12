@@ -6,6 +6,42 @@ Where wardOS actually stands. Read this first, every session.
 
 ---
 
+## Resume here
+
+**All work lives on the branch `design-system-and-core-model`, 10 commits ahead of `main` and not merged.** `main` still holds the original pre-redesign prototype. The working tree is clean. Merging is a decision the owner has not made yet — do not merge without asking.
+
+**The next task is Clerk authentication** (step 2 in Next up). The schema already defines `people`, `seats`, and `memberships`, so there is something for identity to attach to. Clerk owns identity only — it must never hold callings.
+
+**Before touching anything, read [`docs/plans/2026-08-11-mental-model-design.md`](docs/plans/2026-08-11-mental-model-design.md).** The core model is not derivable from the code alone, and getting it wrong will produce work that has to be thrown away.
+
+**There is still no authentication of any kind. Do not deploy.**
+
+### Running and verifying
+
+```bash
+pnpm dev        # port 3000, sometimes 3001
+pnpm typecheck  # must pass before any commit
+pnpm build      # must pass before any commit
+```
+
+`pnpm lint` is broken and stays broken until defect 11 is fixed.
+
+Key routes: `/dashboard`, `/meetings` (shows the model most clearly), `/leadership/hc` (the scoped liaison seat), `/p/oak-hills/program` (the public bulletin — view at phone width).
+
+### External references
+
+- **Figma — Ward Program bulletin.** File key `DGbXfeBGOuRcNxJ5TvVDzD`, order-of-service node `1:17`, masthead node `1:11`. Reachable through the Figma MCP server, which is configured at **user scope** and already authenticated. The frame holds three variants at identical coordinates and renders blank above ~1,400px; the December 15 variant was treated as canonical. **This was never confirmed with the owner.**
+- The bulletin's source typeface is Aktiv Grotesk; the owner chose DM Sans instead. Do not reopen this.
+
+### Questions the owner has not answered
+
+1. Is the December 15 Figma variant the right one?
+2. Should the bulletin's two header icons be the exported Figma vectors rather than the lucide substitutes currently in place?
+3. Delete `.agents/AGENTS.md`? It is now actively wrong, not merely stale.
+4. **Personal commitments.** `held_by_person_id` exists in the schema and one seeded commitment uses it, but the release flow that would surface *"Ferenc personally held 2 items — still valid for his successor?"* is **not built**. The column is inert until it is.
+
+---
+
 ## Phase
 
 **Prototype → first real deployment.** The app is a complete clickable prototype with no persistence and no authentication. The goal is a version the owner's Elders Quorum presidency can use for one full Sunday cycle.
@@ -16,7 +52,7 @@ Not working today: nothing persists, nobody signs in, every "Add / Publish / Sta
 
 ---
 
-## In flight
+## Landed 2026-08-11 → 2026-08-12
 
 - **Visual redesign — design system landed, not yet documented.** Two rounds of alternative visual worlds were rolled and declined; the owner took the category standard on 2026-08-11. Pinned decisions are recorded in `PRODUCT.md` under Brand Commitments: DM Sans, white field, near-black type, cobalt `#1D4ED8`, Notion as the craft reference.
 
