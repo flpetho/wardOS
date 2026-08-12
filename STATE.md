@@ -64,7 +64,7 @@ Not working today: nothing persists, nobody signs in, every "Add / Publish / Sta
 
   **Known deviations from the source:**
   - The two 24×24 icons are lucide `Clock`/`Radio`, **not** the exported Figma vectors.
-  - No seasonal hero artwork — the source has a full-bleed image and no asset was supplied. The layout closes up cleanly without it; the slot is marked in the component.
+  - No seasonal hero artwork yet. `sundayProgram.heroImage` is `null`, which renders a marked placeholder full-bleed at the source's 393×440 ratio rather than collapsing — the space is part of the composition. To fill it: drop a file you have rights to in `img/`, import it as the temple photo is imported, and assign it.
   - No print stylesheet. "Bulletin" implies paper, but printing was never confirmed as a requirement.
   - The source Figma frame contains three variants at identical coordinates and renders blank above ~1,400px; the December 15 variant was used as canonical.
 

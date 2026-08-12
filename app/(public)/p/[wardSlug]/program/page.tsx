@@ -1,6 +1,7 @@
+import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Clock, Radio } from "lucide-react";
+import { Clock, Image as ImageIcon, Radio } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { sundayProgram, wardMeetingInfo, workspace } from "@/lib/data";
 import type { Hymn, ProgramSlot } from "@/lib/types";
@@ -57,10 +58,7 @@ export default async function PublicProgramPage({
         <MeetingNote icon={<Radio />} text={wardMeetingInfo.broadcastNote} />
       </div>
 
-      {/*
-        Seasonal artwork sits here in the source design, full-bleed at roughly
-        4:3. No asset supplied yet; the layout closes up cleanly without it.
-      */}
+      <Hero image={program.heroImage} />
 
       <SectionHeading>Sacrament Meeting:</SectionHeading>
 
@@ -170,6 +168,37 @@ function Masthead({ date }: { date: string }) {
         </time>
       </p>
     </header>
+  );
+}
+
+/*
+  Full-bleed seasonal artwork, 393x440 in the source design. The negative
+  margin cancels the page gutter so the image reaches both edges.
+
+  With no asset, this renders a placeholder at the same ratio rather than
+  collapsing — the space is part of the composition, and an honest gap is
+  better than a layout that silently pretends nothing is missing.
+*/
+function Hero({ image }: { image: StaticImageData | string | null | undefined }) {
+  if (image) {
+    return (
+      <div className="relative -mx-[29px] mt-9 aspect-[393/440]">
+        <Image src={image} alt="" fill sizes="393px" className="object-cover" priority />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="-mx-[29px] mt-9 flex aspect-[393/440] flex-col items-center justify-center gap-2.5 border-y"
+      style={{ borderColor: `${INK}26`, backgroundColor: `${INK}0a` }}
+      role="img"
+      aria-label="Seasonal artwork placeholder"
+    >
+      <ImageIcon className="size-6 opacity-30" aria-hidden />
+      <p className="text-[12px] font-medium tracking-[-0.02em] opacity-45">Seasonal artwork</p>
+      <p className="text-[11px] font-light opacity-35">Placeholder</p>
+    </div>
   );
 }
 

@@ -224,6 +224,12 @@ export type ProgramAnnouncement = {
 export type SundayProgram = {
   programDate: string;
   status: ProgramStatus;
+  /**
+   * Seasonal artwork, full-bleed at the top of the bulletin. Null renders a
+   * marked placeholder at the same ratio so the layout is honest about what
+   * is missing rather than quietly closing up.
+   */
+  heroImage?: StaticImageData | string | null;
   presiding: string;
   conducting: string;
   chorister: string;

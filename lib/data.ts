@@ -323,6 +323,13 @@ export const wardMeetingInfo: WardMeetingInfo = {
 export const sundayProgram: SundayProgram = {
   programDate: "2026-07-12",
   status: "published",
+  /*
+    Full-bleed seasonal artwork, 393x440 in the source design. To set it: drop
+    a file you have rights to in `img/`, import it at the top of this file the
+    way the temple photo is imported, and assign it here. Null renders a marked
+    placeholder at the same ratio.
+  */
+  heroImage: null,
   presiding: "Bishop Nathan Cole",
   conducting: "Brother Ethan Ward",
   chorister: "Sister Amy Placeholder",
