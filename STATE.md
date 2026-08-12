@@ -2,7 +2,7 @@
 
 Where wardOS actually stands. Read this first, every session.
 
-**Last updated:** 2026-08-11
+**Last updated:** 2026-08-12
 
 ---
 
@@ -102,6 +102,8 @@ Clerk is deliberately step 2, not step 1 — the schema has to know what a Membe
 | 2026-08-11 | **Kanban belongs in Meeting Mode only,** where the lifecycle states are the columns. The dashboard stays a list. |
 | 2026-08-11 | **Secretary holds full Steward rights,** including publishing the Sunday program. |
 | 2026-08-11 | **The high councilor cannot see the quorum budget.** The one area-level exclusion, and an amendment to "everyone sees everything" — which now holds *within the Steward tier*. Visibility is tier-scoped and per-area, never per-record. |
+| 2026-08-12 | **Stay on DM Sans.** The source bulletin design is set in Aktiv Grotesk, which is available to the owner through his existing Creative Cloud subscription via Adobe Fonts. He chose DM Sans anyway. Note the tradeoff that decided nothing here: Adobe Fonts webfonts must be served from `use.typekit.net` and cannot be self-hosted, so Aktiv would add an external runtime dependency to a tool used on chapel wifi. DM Sans self-hosts through `next/font` with zero external requests. |
+| 2026-08-12 | **Figma MCP added at user scope**, not project scope — project scope would write a `.mcp.json` into this repo and hand the server config to anyone cloning it. Figma's official plugin was skipped because the `claude-plugins-official` marketplace is not registered on this machine. |
 | 2026-08-11 | **Gap vs. free-standing Commitment test:** is there a record with a checkable condition? If not, it is a Commitment closed by hand. See the design doc for the classification of all current seed items. |
 | 2026-08-11 | **Seats carry an area scope, not a tier label.** Raised by the owner: ward callings outside the quorum (e.g. a Sunday program coordinator) will need access to one area only. The three tiers become configurations of one mechanism — a per-area capability matrix, never per-record rules. Built at schema time because retrofitting it after auth means touching every query. |
 | 2026-08-11 | **Deferred:** whether the Sunday program, ward calendar, and building cleaning belong to a ward scope above organisation scope rather than to the Elders Quorum. Answers PRD §24 Q2. Not built; recorded so area-scoped seats do not block it. |
@@ -143,5 +145,15 @@ Found in the 2026-08-11 review. All verified by running the app, not inferred. N
 
 ## Notes
 
-- `.agents/AGENTS.md` predates this system and has known drift (it documents `/leadership/[id]`; the route is `[role]`). Superseded by `CLAUDE.md` + this file. Recommend deleting once the owner confirms nothing there is still wanted.
-- Port 3000 is often occupied on the owner's machine; dev commonly lands on 3001.
+- **All work since 2026-08-11 is on the branch `design-system-and-core-model`, not merged to `main`.** Four commits: design system, temple rail, docs and core model, schema rewrite, bulletin. `main` still holds the pre-redesign prototype.
+- `.agents/AGENTS.md` is now **actively misleading**, not merely stale — it documents `leadershipRoles`, `assignments`, and `agendaItems`, none of which exist after the model rewrite. Recommend deleting.
+- Port 3000 is often occupied on the owner's machine; dev sometimes lands on 3001.
+
+### Operational gotchas on this machine
+
+Recording these because they cost real time to discover and are not recoverable from the code.
+
+- **`python3` is broken** (`posix_spawn: Undefined error: 0`). Use shell tools or Node for scripting.
+- **Chrome's CLI `--screenshot` misreports the viewport.** It lays out at a wider viewport and crops to `--window-size`, which makes a correct responsive layout look like it has horizontal overflow. This produced a false "mobile is broken" diagnosis once. Use the DevTools Protocol with `Emulation.setDeviceMetricsOverride` for any responsive check; scratch scripts `shot.mjs` / `measure.mjs` do this.
+- `sips -c` crops from the **centre**, not the top; `--cropOffset` is centre-relative.
+- Schema changes can be verified for real: `docker run postgres:16-alpine`, pipe the migration in with `ON_ERROR_STOP=1`, then assert constraints with deliberately invalid inserts. This caught nothing broken but proved the model is enforced.
