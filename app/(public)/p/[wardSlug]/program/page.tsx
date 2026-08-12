@@ -149,8 +149,20 @@ export default async function PublicProgramPage({
 function Bulletin({ children }: { children: React.ReactNode }) {
   return (
     <main className="min-h-screen bg-white" style={{ color: INK }}>
-      {/* Top margin matches the source design, where the masthead sits at y=100. */}
-      <div className="mx-auto w-full max-w-[393px] px-[29px] pt-[100px]">{children}</div>
+      {/*
+        Single scrolling column, capped at 440px rather than the source
+        design's 393px. The cap has to clear the widest phone or the
+        full-bleed hero stops short of the screen edge: at 430px (iPhone Pro
+        Max) a 393px cap left a 19px white sliver down each side. 440 covers
+        every common handset, so the image reaches both edges on all of them.
+
+        Above 440 the column stays capped and centres, which reads as a
+        bulletin page. Letting the hero span the whole viewport on a laptop
+        would put a 1500px-wide photo above a narrow text column.
+
+        Top margin matches the source, where the masthead sits at y=100.
+      */}
+      <div className="mx-auto w-full max-w-[440px] px-[29px] pt-[100px]">{children}</div>
     </main>
   );
 }
