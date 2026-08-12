@@ -1,3 +1,4 @@
+import gilbertTemplePhoto from "@/img/gilbert-az-temple.png";
 import type {
   Assignment,
   AgendaItem,
@@ -11,6 +12,7 @@ import type {
   ServiceOpportunity,
   SignupForm,
   SundayProgram,
+  TempleInfo,
   WardOrganization,
 } from "@/lib/types";
 
@@ -448,6 +450,45 @@ export const wardOrganizations: WardOrganization[] = [
     description: "Future master view across organizations, with strict boundaries around confidential bishopric matters.",
   },
 ];
+
+/*
+  Temple reference data.
+
+  Hours below came from public third-party listings, not from a person standing
+  in front of the temple. They are treated as workspace-editable data with a
+  visible `hoursVerified` date and a link to the official page, rather than as
+  authoritative fact — temple schedules shift for maintenance, holidays, and
+  seasonal changes, and a wrong time here sends someone on a wasted drive.
+
+  `closures` is deliberately empty. Closure dates were not published in any
+  source I could verify, and inventing them would be worse than showing none.
+
+  The photo is a static import rather than a /public path, so next/image gets
+  real dimensions at build time and serves resized, modern-format variants
+  instead of the full 2164x1507 original.
+*/
+export const templeInfo: TempleInfo = {
+  name: "Gilbert Arizona Temple",
+  district: "Gilbert Arizona Temple District",
+  address: "3301 S Greenfield Rd",
+  cityStateZip: "Gilbert, AZ 85297",
+  photo: gilbertTemplePhoto,
+  photoCredit: null,
+  officialUrl:
+    "https://www.churchofjesuschrist.org/temples/details/gilbert-arizona-temple?lang=eng",
+  regularHours: [
+    { days: "Tuesday – Saturday", hours: "5:00 AM – 10:00 PM" },
+    { days: "Sunday & Monday", hours: "Closed" },
+  ],
+  closures: [],
+  nextQuorumTempleNight: {
+    date: "2026-07-17",
+    time: "6:00 PM",
+    coordinatorRole: "eq1",
+    note: "Meet in the north parking lot. Rides available for anyone who needs one.",
+  },
+  hoursVerified: "2026-08-11",
+};
 
 export const signupForms: SignupForm[] = [
   {

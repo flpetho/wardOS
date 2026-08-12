@@ -152,6 +152,41 @@ export type BudgetSummary = {
   categories: BudgetCategory[];
 };
 
+import type { StaticImageData } from "next/image";
+
+export type TempleClosure = {
+  id: string;
+  label: string;
+  startDate: string;
+  endDate?: string;
+};
+
+export type QuorumTempleNight = {
+  date: string;
+  time: string;
+  coordinatorRole: LeadershipRoleId;
+  note: string;
+};
+
+export type TempleInfo = {
+  name: string;
+  district: string;
+  address: string;
+  cityStateZip: string;
+  /**
+   * A static import (optimised by next/image at build) or, once persistence
+   * lands, a remote URL string. Null renders a typographic header instead.
+   */
+  photo: StaticImageData | string | null;
+  photoCredit: string | null;
+  officialUrl: string;
+  regularHours: { days: string; hours: string }[];
+  closures: TempleClosure[];
+  nextQuorumTempleNight: QuorumTempleNight | null;
+  /** When a human last checked the hours against the official page. Shown in the UI. */
+  hoursVerified: string;
+};
+
 export type WardOrganization = {
   id: string;
   name: string;
