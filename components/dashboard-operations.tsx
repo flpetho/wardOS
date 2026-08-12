@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { formatDate } from "@/lib/utils";
 import type { AgendaItem, Assignment, LeadershipRole, Status } from "@/lib/types";
 
 const assignmentStatuses: Status[] = [
@@ -42,97 +43,103 @@ export function DashboardOperations({
 
   return (
     <>
-      <section className="grid gap-4 lg:grid-cols-3">
+      <section className="grid gap-5 lg:grid-cols-[1fr_1.35fr] xl:grid-cols-[1fr_1.4fr_1fr]">
         <Card>
           <CardHeader>
             <CardTitle>EQ Leadership</CardTitle>
             <CardDescription>Role-owned work across the presidency.</CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            {leadershipRoles.map((role) => {
-              const roleAssignments = assignments.filter((item) => item.ownerRole === role.id);
-              const roleAgenda = agendaItems.filter((item) => item.ownerRole === role.id);
-              const carriedOver = roleAgenda.filter((item) => item.status === "Carried over");
-              const waiting = roleAssignments.filter((item) => item.status === "Waiting");
-              const overdue = roleAssignments.filter((item) => isOverdue(item));
+          <CardContent className="px-0 pb-0">
+            <ul className="divide-y divide-border border-t border-border">
+              {leadershipRoles.map((role) => {
+                const roleAssignments = assignments.filter((item) => item.ownerRole === role.id);
+                const roleAgenda = agendaItems.filter((item) => item.ownerRole === role.id);
+                const carriedOver = roleAgenda.filter((item) => item.status === "Carried over");
+                const waiting = roleAssignments.filter((item) => item.status === "Waiting");
+                const overdue = roleAssignments.filter((item) => isOverdue(item));
+                const flags = [
+                  overdue.length ? `${overdue.length} overdue` : null,
+                  waiting.length ? `${waiting.length} waiting` : null,
+                  carriedOver.length ? `${carriedOver.length} carried over` : null,
+                ].filter(Boolean) as string[];
 
-              return (
-                <div key={role.id} className="rounded-md border p-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-medium">{role.person}</p>
-                      <p className="text-sm text-muted-foreground">{role.calling}</p>
+                return (
+                  <li key={role.id} className="flex items-start justify-between gap-3 px-5 py-3">
+                    <div className="min-w-0">
+                      <p className="text-[14px] font-medium text-foreground">{role.person}</p>
+                      <p className="mt-0.5 text-[13px] text-muted-foreground">{role.calling}</p>
+                      <p data-numeric className="mt-1 text-[13px] text-muted-foreground">
+                        {countLabel(roleAssignments.length, "assignment")} ·{" "}
+                        {countLabel(roleAgenda.length, "agenda item")}
+                      </p>
                     </div>
-                    <span className="text-sm text-muted-foreground">
-                      {roleAssignments.length + roleAgenda.length}
-                    </span>
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <Badge variant="secondary">{roleAssignments.length} assignments</Badge>
-                    <Badge variant="outline">{roleAgenda.length} agenda</Badge>
-                    {role.responsibilities.slice(0, 2).map((responsibility) => (
-                      <Badge key={responsibility} variant="outline">
-                        {responsibility}
-                      </Badge>
-                    ))}
-                    {carriedOver.length ? (
-                      <Badge variant="warning">{carriedOver.length} carried over</Badge>
-                    ) : null}
-                    {waiting.length ? <Badge variant="warning">{waiting.length} waiting</Badge> : null}
-                    {overdue.length ? <Badge variant="warning">{overdue.length} overdue</Badge> : null}
-                  </div>
-                </div>
-              );
-            })}
+                    {flags.length ? (
+                      <Badge variant="warning">{flags[0]}</Badge>
+                    ) : (
+                      <Badge variant="success">Clear</Badge>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
             <CardTitle>Assignments</CardTitle>
-            <CardDescription>Click an assignment to update status or ownership.</CardDescription>
+            <CardDescription>Select an assignment to update status or ownership.</CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            {assignments.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setSelectedAssignmentId(item.id)}
-                className="flex w-full items-start justify-between gap-3 rounded-md border bg-background p-3 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <div>
-                  <p className="font-medium">{item.title}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {resolveRoleLabel(leadershipRoles, item.ownerRole)} · due {item.dueDate}
-                  </p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <Badge variant="outline">{item.responsibility}</Badge>
-                    {isOverdue(item) ? <Badge variant="warning">Overdue</Badge> : null}
-                  </div>
-                </div>
-                <StatusBadge status={item.status} />
-              </button>
-            ))}
+          <CardContent className="px-0 pb-0">
+            <ul className="divide-y divide-border border-t border-border">
+              {assignments.map((item) => (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedAssignmentId(item.id)}
+                    className="flex w-full items-start justify-between gap-3 px-5 py-3 text-left transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                  >
+                    <span className="min-w-0">
+                      <span className="block text-[14px] font-medium text-foreground">
+                        {item.title}
+                      </span>
+                      <span className="mt-0.5 block text-[13px] text-muted-foreground">
+                        {resolveRoleLabel(leadershipRoles, item.ownerRole)}
+                      </span>
+                      <span className="mt-0.5 block text-[13px]">
+                        <span className="text-muted-foreground">
+                          Due <time dateTime={item.dueDate}>{formatDate(item.dueDate)}</time>
+                        </span>
+                        {isOverdue(item) ? (
+                          <span className="font-medium text-attention"> · Overdue</span>
+                        ) : null}
+                      </span>
+                    </span>
+                    <StatusBadge status={item.status} />
+                  </button>
+                </li>
+              ))}
+            </ul>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="lg:col-span-2 xl:col-span-1">
           <CardHeader>
             <CardTitle>Meeting agenda</CardTitle>
             <CardDescription>Current and carried-over agenda items.</CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            {agendaItems.slice(0, 4).map((item) => (
-              <div key={item.id} className="rounded-md border p-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-medium">{item.title}</p>
-                    <p className="text-sm text-muted-foreground">{item.responsibility}</p>
+          <CardContent className="px-0 pb-0">
+            <ul className="divide-y divide-border border-t border-border">
+              {agendaItems.slice(0, 4).map((item) => (
+                <li key={item.id} className="flex items-start justify-between gap-3 px-5 py-3">
+                  <div className="min-w-0">
+                    <p className="text-[14px] font-medium text-foreground">{item.title}</p>
+                    <p className="mt-0.5 text-[13px] text-muted-foreground">{item.responsibility}</p>
                   </div>
                   <StatusBadge status={item.status} />
-                </div>
-              </div>
-            ))}
+                </li>
+              ))}
+            </ul>
           </CardContent>
         </Card>
       </section>
@@ -319,6 +326,10 @@ function AssignmentModal({
       </div>
     </div>
   );
+}
+
+function countLabel(count: number, noun: string) {
+  return `${count} ${noun}${count === 1 ? "" : "s"}`;
 }
 
 function resolveRoleLabel(leadershipRoles: LeadershipRole[], roleId: string) {
