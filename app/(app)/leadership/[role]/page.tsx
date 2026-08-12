@@ -5,15 +5,12 @@ import { StatusBadge } from "@/components/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  getLeadershipRole,
-  getLeadershipWork,
-  leadershipRoles,
-} from "@/lib/data";
-import type { LeadershipRoleId } from "@/lib/types";
+import { getHolder, getSeat, getSeatWork, seats } from "@/lib/data";
+import { formatDate } from "@/lib/utils";
+import type { SeatKey } from "@/lib/types";
 
 export function generateStaticParams() {
-  return leadershipRoles.map((role) => ({ role: role.id }));
+  return seats.map((seat) => ({ role: seat.id }));
 }
 
 export default async function LeadershipPage({
@@ -22,24 +19,26 @@ export default async function LeadershipPage({
   params: Promise<{ role: string }>;
 }) {
   const { role: roleParam } = await params;
-  const role = getLeadershipRole(roleParam);
+  const seat = getSeat(roleParam);
 
-  if (!role) {
+  if (!seat) {
     notFound();
   }
 
-  const work = getLeadershipWork(role.id as LeadershipRoleId);
-  const activeCount =
-    work.assignments.length +
-    work.agendaItems.length +
-    work.serviceOpportunities.length +
-    work.cleaningAssignments.length;
+  const holder = getHolder(seat.id as SeatKey);
+  const work = getSeatWork(seat.id as SeatKey);
+
+  const committed = work.commitments.filter((item) => item.state === "committed");
+  const onAgenda = work.commitments.filter(
+    (item) => item.state === "on_agenda" || item.state === "proposed",
+  );
+  const activeCount = work.commitments.length + work.gaps.length;
 
   return (
     <>
       <PageHeading
-        title={`${role.person} · ${role.title}`}
-        description={`${role.person} · ${role.summary}`}
+        title={holder ? `${holder.name} · ${seat.title}` : seat.title}
+        description={seat.summary}
         action={
           <div className="flex gap-2">
             <Button variant="outline">
@@ -48,35 +47,47 @@ export default async function LeadershipPage({
             </Button>
             <Button>
               <Plus data-icon="inline-start" />
-              Add assignment
+              Add commitment
             </Button>
           </div>
         }
       />
 
-      <section className="grid gap-4 lg:grid-cols-[0.75fr_1.25fr]">
+      <section className="grid gap-5 lg:grid-cols-[0.75fr_1.25fr]">
         <Card>
           <CardHeader>
             <CardTitle>Calling scope</CardTitle>
-            <CardDescription>Responsibilities currently attached to this calling.</CardDescription>
+            <CardDescription>Responsibilities attached to this seat.</CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            {role.responsibilities.map((responsibility) => (
-              <div key={responsibility} className="rounded-md border p-3">
-                <p className="font-medium">{responsibility}</p>
+          <CardContent className="flex flex-col gap-2.5">
+            {seat.responsibilities.map((responsibility) => (
+              <div key={responsibility} className="rounded-md border border-border px-3 py-2.5">
+                <p className="text-[14px] font-medium">{responsibility}</p>
               </div>
             ))}
+            <div className="mt-1 flex flex-wrap gap-1.5">
+              {seat.areas.map((area) => (
+                <Badge key={area} variant="outline">
+                  {area}
+                </Badge>
+              ))}
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
             <CardTitle>Handbook-informed focus</CardTitle>
-            <CardDescription>Operational interpretation for wardOS, not a policy substitute.</CardDescription>
+            <CardDescription>
+              Operational interpretation for wardOS, not a policy substitute.
+            </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            {role.handbookFocus.map((focus) => (
-              <div key={focus} className="rounded-md border p-3 text-sm">
+          <CardContent className="flex flex-col gap-2.5">
+            {seat.handbookFocus.map((focus) => (
+              <div
+                key={focus}
+                className="rounded-md border border-border px-3 py-2.5 text-[14px] leading-relaxed"
+              >
                 {focus}
               </div>
             ))}
@@ -84,88 +95,94 @@ export default async function LeadershipPage({
         </Card>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-5 md:grid-cols-3">
         <Metric label="Active items" value={String(activeCount)} />
-        <Metric label="Agenda items" value={String(work.agendaItems.length)} />
-        <Metric label="Assignments" value={String(work.assignments.length)} />
+        <Metric label="Committed" value={String(committed.length)} />
+        <Metric label="On agenda" value={String(onAgenda.length)} />
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-2">
+      <section className="grid gap-5 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Assignments and duties</CardTitle>
-            <CardDescription>Role-owned work that needs follow-up.</CardDescription>
+            <CardTitle>Committed work</CardTitle>
+            <CardDescription>Owned by this calling with a due date.</CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            {work.assignments.length ? (
-              work.assignments.map((assignment) => (
-                <div key={assignment.id} className="rounded-md border p-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-medium">{assignment.title}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {assignment.responsibility} · due {assignment.dueDate}
+          <CardContent className="px-0 pb-0">
+            {committed.length ? (
+              <ul className="divide-y divide-border border-t border-border">
+                {committed.map((item) => (
+                  <li key={item.id} className="flex items-start justify-between gap-3 px-5 py-3">
+                    <div className="min-w-0">
+                      <p className="text-[14px] font-medium">{item.title}</p>
+                      <p className="mt-0.5 text-[13px] text-muted-foreground">
+                        {item.responsibility}
+                        {item.dueDate ? (
+                          <>
+                            {" · due "}
+                            <time dateTime={item.dueDate}>{formatDate(item.dueDate)}</time>
+                          </>
+                        ) : null}
                       </p>
                     </div>
-                    <StatusBadge status={assignment.status} />
-                  </div>
-                </div>
-              ))
+                    <StatusBadge status={item.state} />
+                  </li>
+                ))}
+              </ul>
             ) : (
-              <EmptyMessage label="No assignments are owned by this role yet." />
+              <EmptyMessage label="Nothing is committed to this calling right now." />
             )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Meeting agenda</CardTitle>
-            <CardDescription>Submitted, carried-over, or active agenda items.</CardDescription>
+            <CardTitle>Agenda</CardTitle>
+            <CardDescription>Proposed and on-agenda items for this calling.</CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            {work.agendaItems.length ? (
-              work.agendaItems.map((item) => (
-                <div key={item.id} className="rounded-md border p-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-medium">{item.title}</p>
-                      <p className="mt-1 text-sm text-muted-foreground">{item.detail}</p>
+          <CardContent className="px-0 pb-0">
+            {onAgenda.length ? (
+              <ul className="divide-y divide-border border-t border-border">
+                {onAgenda.map((item) => (
+                  <li key={item.id} className="flex items-start justify-between gap-3 px-5 py-3">
+                    <div className="min-w-0">
+                      <p className="text-[14px] font-medium">{item.title}</p>
+                      {item.detail ? (
+                        <p className="mt-0.5 text-[13px] leading-relaxed text-muted-foreground">
+                          {item.detail}
+                        </p>
+                      ) : null}
                     </div>
-                    <StatusBadge status={item.status} />
-                  </div>
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    {item.responsibility} · {item.meetingDate}
-                  </p>
-                </div>
-              ))
+                    <StatusBadge status={item.state} />
+                  </li>
+                ))}
+              </ul>
             ) : (
-              <EmptyMessage label="No agenda items are assigned to this role yet." />
+              <EmptyMessage label="No agenda items are attached to this calling." />
             )}
           </CardContent>
         </Card>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-2">
+      <section className="grid gap-5 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Relevant service</CardTitle>
-            <CardDescription>Service opportunities connected to this role.</CardDescription>
+            <CardTitle>Claimed gaps</CardTitle>
+            <CardDescription>
+              Computed from the records themselves. These close when the record fills.
+            </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            {work.serviceOpportunities.length ? (
-              work.serviceOpportunities.map((item) => (
-                <div key={item.id} className="rounded-md border p-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="font-medium">{item.title}</p>
-                    <StatusBadge status={item.status} />
-                  </div>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {item.needed} · {item.date}
-                  </p>
-                </div>
-              ))
+          <CardContent className="px-0 pb-0">
+            {work.gaps.length ? (
+              <ul className="divide-y divide-border border-t border-border">
+                {work.gaps.map((gap) => (
+                  <li key={gap.id} className="flex items-start justify-between gap-3 px-5 py-3">
+                    <p className="min-w-0 text-[14px]">{gap.title}</p>
+                    <StatusBadge status={gap.status} />
+                  </li>
+                ))}
+              </ul>
             ) : (
-              <EmptyMessage label="No service items are attached to this role." />
+              <EmptyMessage label="This calling has not claimed any open gaps." />
             )}
           </CardContent>
         </Card>
@@ -173,25 +190,23 @@ export default async function LeadershipPage({
         <Card>
           <CardHeader>
             <CardTitle>Guardrails</CardTitle>
-            <CardDescription>Boundaries for keeping wardOS operational rather than pastoral.</CardDescription>
+            <CardDescription>
+              Boundaries for keeping wardOS operational rather than pastoral.
+            </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-3 text-sm">
-            <div className="flex items-center gap-2">
-              <ShieldCheck />
-              <p className="font-medium">Keep out of wardOS</p>
+          <CardContent className="flex flex-col gap-3 text-[14px]">
+            <div className="flex items-center gap-2 font-medium">
+              <ShieldCheck data-icon="" />
+              Keep out of wardOS
             </div>
-            {role.guardrails.map((guardrail) => (
-              <p key={guardrail} className="rounded-md border p-3 text-muted-foreground">
+            {seat.guardrails.map((guardrail) => (
+              <p
+                key={guardrail}
+                className="rounded-md border border-border px-3 py-2.5 leading-relaxed text-muted-foreground"
+              >
                 {guardrail}
               </p>
             ))}
-            <div className="flex flex-wrap gap-2">
-              {role.responsibilities.map((responsibility) => (
-                <Badge key={responsibility} variant="outline">
-                  {responsibility}
-                </Badge>
-              ))}
-            </div>
           </CardContent>
         </Card>
       </section>
@@ -204,33 +219,21 @@ export default async function LeadershipPage({
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-3">
-          <div className="rounded-md border p-3 text-sm">
-            <div className="flex items-center gap-2 font-medium">
-              <ClipboardList />
-              Review role-owned assignments
-            </div>
-            <p className="mt-2 text-muted-foreground">
-              Decide what is complete, waiting, or should become a carried-over item.
-            </p>
-          </div>
-          <div className="rounded-md border p-3 text-sm">
-            <div className="flex items-center gap-2 font-medium">
-              <NotebookTabs />
-              Add agenda items
-            </div>
-            <p className="mt-2 text-muted-foreground">
-              Capture operational questions before the bi-monthly presidency meeting.
-            </p>
-          </div>
-          <div className="rounded-md border p-3 text-sm">
-            <div className="flex items-center gap-2 font-medium">
-              <ShieldCheck />
-              Check sensitivity
-            </div>
-            <p className="mt-2 text-muted-foreground">
-              Link out or summarize operationally when details become personal or confidential.
-            </p>
-          </div>
+          <Checklist
+            icon={<ClipboardList data-icon="" />}
+            title="Review committed work"
+            text="Decide what is done, what should be carried, and what should be dropped."
+          />
+          <Checklist
+            icon={<NotebookTabs data-icon="" />}
+            title="Add agenda items"
+            text="Capture operational questions before the bi-monthly presidency meeting."
+          />
+          <Checklist
+            icon={<ShieldCheck data-icon="" />}
+            title="Check sensitivity"
+            text="Link out or summarise operationally when details become personal or confidential."
+          />
         </CardContent>
       </Card>
     </>
@@ -240,18 +243,40 @@ export default async function LeadershipPage({
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <Card>
-      <CardContent className="p-4">
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <p className="mt-1 text-2xl font-semibold">{value}</p>
+      <CardContent className="px-5 py-4">
+        <p className="text-[13px] text-muted-foreground">{label}</p>
+        <p data-numeric className="mt-1 text-[24px] font-semibold tracking-[-0.02em]">
+          {value}
+        </p>
       </CardContent>
     </Card>
   );
 }
 
+function Checklist({
+  icon,
+  title,
+  text,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="rounded-md border border-border px-3 py-3 text-[14px]">
+      <div className="flex items-center gap-2 font-medium">
+        {icon}
+        {title}
+      </div>
+      <p className="mt-2 leading-relaxed text-muted-foreground">{text}</p>
+    </div>
+  );
+}
+
 function EmptyMessage({ label }: { label: string }) {
   return (
-    <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
+    <p className="border-t border-border px-5 py-8 text-center text-[14px] text-muted-foreground">
       {label}
-    </div>
+    </p>
   );
 }

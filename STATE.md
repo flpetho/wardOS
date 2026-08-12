@@ -42,11 +42,21 @@ Not working today: nothing persists, nobody signs in, every "Add / Publish / Sta
 
   Not yet in the Supabase schema — needs a `temple_info` table (and a decision on whether the quorum temple night belongs there or in a general events table) when persistence is wired.
 
+- **Schema and types rewritten to the core model — done 2026-08-11.**
+
+  `supabase/migrations/202607060001_initial_schema.sql` was rewritten in place (it had never been applied anywhere) and **verified against a real Postgres 16**: it applies cleanly, and six constraint tests confirmed the model is enforced rather than merely described — invalid seat area rejected, two concurrent holders of one seat rejected, succession accepted, `committed` without an owner or due date rejected, orphaned `source_type` rejected, and a valid personally-held commitment accepted.
+
+  Landed: `seats` (with `areas` scope and `can_administer`), `memberships` (dated, one current holder enforced by a partial unique index), `commitments` (merging `assignments` and `agenda_items`, with `held_by_person_id` and `source_type`/`source_id`), `commitment_appearances`, `temple_info`, `temple_closures`, and `meeting_attendees`. `users` became `people`, since Clerk owns identity.
+
+  Gaps have **no table** and are computed in `lib/data.ts:computeGaps()`. Two former agenda items disappeared entirely because they were duplicates of computable gaps.
+
+  All twelve consumer files were updated. Typecheck and build pass; every route returns 200.
+
 ## Next up
 
 Ordered by the core model agreed 2026-08-11. Read [`docs/plans/2026-08-11-mental-model-design.md`](docs/plans/2026-08-11-mental-model-design.md) before starting any of these.
 
-1. **Schema + types rewrite.** `seats`, `memberships`, `commitments` (merging `assignments` + `agenda_items`), `commitment_appearances`. Free now because nothing is persisted; expensive once it is. Folds in defects 13 and 14.
+1. ~~**Schema + types rewrite.**~~ **Done 2026-08-11.** See In flight above.
 2. **Clerk + memberships.** Identity only — Clerk never holds callings. Person → Membership → Seat → Workspace, with workspace switching for the high councilor. Closes defect 1.
 3. **Emphasis on the shared dashboard.** Everyone sees everything; the signed-in seat's work renders loud and the rest quiet. No access control inside a workspace.
 4. **Meeting Mode.** The highest-value flow in the PRD (§12 Flow 3) and still entirely unbuilt. Self-building agenda, four-column board, decisions recorded.
@@ -77,6 +87,8 @@ Clerk is deliberately step 2, not step 1 — the schema has to know what a Membe
 | 2026-08-11 | **Secretary holds full Steward rights,** including publishing the Sunday program. |
 | 2026-08-11 | **The high councilor cannot see the quorum budget.** The one area-level exclusion, and an amendment to "everyone sees everything" — which now holds *within the Steward tier*. Visibility is tier-scoped and per-area, never per-record. |
 | 2026-08-11 | **Gap vs. free-standing Commitment test:** is there a record with a checkable condition? If not, it is a Commitment closed by hand. See the design doc for the classification of all current seed items. |
+| 2026-08-11 | **Seats carry an area scope, not a tier label.** Raised by the owner: ward callings outside the quorum (e.g. a Sunday program coordinator) will need access to one area only. The three tiers become configurations of one mechanism — a per-area capability matrix, never per-record rules. Built at schema time because retrofitting it after auth means touching every query. |
+| 2026-08-11 | **Deferred:** whether the Sunday program, ward calendar, and building cleaning belong to a ward scope above organisation scope rather than to the Elders Quorum. Answers PRD §24 Q2. Not built; recorded so area-scoped seats do not block it. |
 
 ---
 
@@ -93,19 +105,19 @@ Found in the 2026-08-11 review. All verified by running the app, not inferred. N
 ### Correctness
 
 4. ~~**DM Sans is downloaded but never applied.**~~ **Fixed 2026-08-11.** The next/font variable is now `--font-dm-sans`, so it no longer collides with the `--font-sans` declaration in `globals.css`. The app renders in DM Sans.
-5. **Build-time dates on statically prerendered pages.** **Partially fixed 2026-08-11** — `dashboard-calendar` now resolves "today" in a `useEffect` (client-only, no mismatch), and the dashboard's "Needs attention" list is derived from status rather than from the clock. **Still open:** `components/dashboard-operations.tsx` `isOverdue()` still calls `new Date()` during render on a static route.
+5. ~~**Build-time dates on statically prerendered pages.**~~ **Fixed 2026-08-11.** Both `dashboard-calendar` and `dashboard-operations` now resolve "today" in a `useEffect`, so nothing compares against the clock during a prerendered render.
 6. ~~**Calendar opens on a hardcoded July 2026.**~~ **Fixed 2026-08-11.** The opening month is now derived from the first event in the data. Note this is deliberately not "the current month" — that needs a client-side date, and with all seed data in July an August default would render an empty calendar.
 7. **Nav badges don't react to edits.** `components/app-shell.tsx:75` reads module arrays directly while `DashboardOperations` holds edits in local state. Marking an assignment complete doesn't move the count. Lessons badge also string-matches on `"needs"` (`app-shell.tsx:96-98`).
 8. **Admin "Save local changes" is misleading.** `components/admin-console.tsx:49` writes to localStorage that nothing reads. `JSON.parse` at line 44 has no try/catch — a corrupt entry white-screens the page.
 9. ~~**`data-icon` attribute is used 22 times with no CSS behind it.**~~ **Fixed 2026-08-11.** `globals.css` now implements `[data-icon]` (1rem box, no shrink, optical inline spacing), so the existing 22 call sites work as intended instead of rendering at lucide's 24px default.
-10. **Seed data contradicts itself.** `lib/data.ts:215-217` — service-1 has `owner: "Second Counselor"` with `ownerRole: "eq1"` (First Counselor); service-2 says `"EQ Secretary"` with `ownerRole: "eq1"`.
+10. ~~**Seed data contradicts itself.**~~ **Fixed 2026-08-11.** Service opportunities carried both a free-text `owner` and a conflicting `ownerRole`. There is now a single `seatId`, and the person is resolved from the membership, so the two cannot disagree.
 
 ### Tooling and schema
 
 11. **`pnpm lint` is broken.** `next lint` was removed in Next 16; it now reads "lint" as a directory path.
 12. **Every dependency is pinned to `"latest"`** in `package.json`. The lockfile protects today; any `pnpm update` can jump majors silently.
-13. **Status vocabularies disagree** between database and app. Migration uses `'published'` / `'on_agenda'`; `lib/types.ts` uses `"Published"` / `"On agenda"`. Needs a mapping layer or one side changes — resolve before wiring Supabase.
-14. **`service_opportunities` and `cleaning_assignments` have no `signup_form_id` column** in the migration, though the app links by it and `prd` §20 lists it.
+13. ~~**Status vocabularies disagree.**~~ **Fixed 2026-08-11.** TypeScript now uses the database's lowercase snake_case values exactly. `components/status-badge.tsx` is the single mapping point to display labels.
+14. ~~**Missing `signup_form_id`.**~~ **Fixed 2026-08-11.** Added to both `service_opportunities` and `cleaning_assignments`.
 15. **RLS is enabled on every table with only public policies.** Once wired, nothing internal is readable via the anon key until authenticated policies exist.
 16. **`createServiceSupabaseClient` uses the service-role key and bypasses RLS.** Harmless while unused; a full data leak if it ever reaches a client component or an unauthenticated route.
 17. **No tests and no test framework.**

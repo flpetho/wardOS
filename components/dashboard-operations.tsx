@@ -1,43 +1,50 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { CalendarPlus, CheckCircle2, FilePenLine, RotateCcw } from "lucide-react";
-import { StatusBadge } from "@/components/status-badge";
+import { useEffect, useMemo, useState } from "react";
+import { CheckCircle2, FilePenLine, RotateCcw } from "lucide-react";
+import { StatusBadge, statusLabel } from "@/components/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { formatDate } from "@/lib/utils";
-import type { AgendaItem, Assignment, LeadershipRole, Status } from "@/lib/types";
+import type { Commitment, CommitmentState, SeatKey, SeatWithHolder } from "@/lib/types";
 
-const assignmentStatuses: Status[] = [
-  "Not started",
-  "In progress",
-  "Waiting",
-  "Completed",
-  "Archived",
-];
+const STATES: CommitmentState[] = ["proposed", "on_agenda", "committed", "done", "dropped"];
+const OPEN_STATES: CommitmentState[] = ["proposed", "on_agenda", "committed"];
 
 export function DashboardOperations({
-  initialAssignments,
-  agendaItems,
-  leadershipRoles,
+  initialCommitments,
+  seats,
 }: {
-  initialAssignments: Assignment[];
-  agendaItems: AgendaItem[];
-  leadershipRoles: LeadershipRole[];
+  initialCommitments: Commitment[];
+  seats: SeatWithHolder[];
 }) {
-  const [assignments, setAssignments] = useState(initialAssignments);
-  const [selectedAssignmentId, setSelectedAssignmentId] = useState<string | null>(null);
-  const selectedAssignment =
-    assignments.find((assignment) => assignment.id === selectedAssignmentId) ?? null;
+  const [commitments, setCommitments] = useState(initialCommitments);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const updateAssignment = (nextAssignment: Assignment) => {
-    setAssignments((currentAssignments) =>
-      currentAssignments.map((assignment) =>
-        assignment.id === nextAssignment.id ? nextAssignment : assignment,
-      ),
+  /*
+    Resolved on the client only. This page is statically prerendered, so
+    comparing against the clock during render would bake the build date into
+    the HTML and then disagree with the browser on hydration.
+  */
+  const [today, setToday] = useState<string | null>(null);
+  useEffect(() => {
+    setToday(new Date().toISOString().slice(0, 10));
+  }, []);
+
+  const selected = commitments.find((item) => item.id === selectedId) ?? null;
+  const open = commitments.filter((item) => OPEN_STATES.includes(item.state));
+  const agenda = open.filter(
+    (item) => item.state === "on_agenda" || item.state === "proposed",
+  );
+
+  const isOverdue = (item: Commitment) =>
+    Boolean(today && item.dueDate && item.state === "committed" && item.dueDate < today);
+
+  const updateCommitment = (next: Commitment) => {
+    setCommitments((current) =>
+      current.map((item) => (item.id === next.id ? next : item)),
     );
   };
 
@@ -47,34 +54,27 @@ export function DashboardOperations({
         <Card>
           <CardHeader>
             <CardTitle>EQ Leadership</CardTitle>
-            <CardDescription>Role-owned work across the presidency.</CardDescription>
+            <CardDescription>Work owned by each calling.</CardDescription>
           </CardHeader>
           <CardContent className="px-0 pb-0">
             <ul className="divide-y divide-border border-t border-border">
-              {leadershipRoles.map((role) => {
-                const roleAssignments = assignments.filter((item) => item.ownerRole === role.id);
-                const roleAgenda = agendaItems.filter((item) => item.ownerRole === role.id);
-                const carriedOver = roleAgenda.filter((item) => item.status === "Carried over");
-                const waiting = roleAssignments.filter((item) => item.status === "Waiting");
-                const overdue = roleAssignments.filter((item) => isOverdue(item));
-                const flags = [
-                  overdue.length ? `${overdue.length} overdue` : null,
-                  waiting.length ? `${waiting.length} waiting` : null,
-                  carriedOver.length ? `${carriedOver.length} carried over` : null,
-                ].filter(Boolean) as string[];
+              {seats.map((seat) => {
+                const owned = open.filter((item) => item.seatId === seat.id);
+                const overdue = owned.filter(isOverdue);
 
                 return (
-                  <li key={role.id} className="flex items-start justify-between gap-3 px-5 py-3">
+                  <li key={seat.id} className="flex items-start justify-between gap-3 px-5 py-3">
                     <div className="min-w-0">
-                      <p className="text-[14px] font-medium text-foreground">{role.person}</p>
-                      <p className="mt-0.5 text-[13px] text-muted-foreground">{role.calling}</p>
+                      <p className="text-[14px] font-medium text-foreground">
+                        {seat.holder?.name ?? "Seat vacant"}
+                      </p>
+                      <p className="mt-0.5 text-[13px] text-muted-foreground">{seat.title}</p>
                       <p data-numeric className="mt-1 text-[13px] text-muted-foreground">
-                        {countLabel(roleAssignments.length, "assignment")} ·{" "}
-                        {countLabel(roleAgenda.length, "agenda item")}
+                        {owned.length} open {owned.length === 1 ? "item" : "items"}
                       </p>
                     </div>
-                    {flags.length ? (
-                      <Badge variant="warning">{flags[0]}</Badge>
+                    {overdue.length ? (
+                      <Badge variant="warning">{overdue.length} overdue</Badge>
                     ) : (
                       <Badge variant="success">Clear</Badge>
                     )}
@@ -87,38 +87,53 @@ export function DashboardOperations({
 
         <Card>
           <CardHeader>
-            <CardTitle>Assignments</CardTitle>
-            <CardDescription>Select an assignment to update status or ownership.</CardDescription>
+            <CardTitle>Commitments</CardTitle>
+            <CardDescription>Select one to update its state or owner.</CardDescription>
           </CardHeader>
           <CardContent className="px-0 pb-0">
             <ul className="divide-y divide-border border-t border-border">
-              {assignments.map((item) => (
-                <li key={item.id}>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedAssignmentId(item.id)}
-                    className="flex w-full items-start justify-between gap-3 px-5 py-3 text-left transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-                  >
-                    <span className="min-w-0">
-                      <span className="block text-[14px] font-medium text-foreground">
-                        {item.title}
-                      </span>
-                      <span className="mt-0.5 block text-[13px] text-muted-foreground">
-                        {resolveRoleLabel(leadershipRoles, item.ownerRole)}
-                      </span>
-                      <span className="mt-0.5 block text-[13px]">
-                        <span className="text-muted-foreground">
-                          Due <time dateTime={item.dueDate}>{formatDate(item.dueDate)}</time>
+              {open.map((item) => {
+                const seat = seats.find((s) => s.id === item.seatId);
+                const carried = Math.max(0, item.appearances.length - 1);
+
+                return (
+                  <li key={item.id}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedId(item.id)}
+                      className="flex w-full items-start justify-between gap-3 px-5 py-3 text-left transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                    >
+                      <span className="min-w-0">
+                        <span className="block text-[14px] font-medium text-foreground">
+                          {item.title}
                         </span>
-                        {isOverdue(item) ? (
-                          <span className="font-medium text-attention"> · Overdue</span>
-                        ) : null}
+                        <span className="mt-0.5 block text-[13px] text-muted-foreground">
+                          {seat ? `${seat.holder?.name ?? seat.title} · ${seat.title}` : "Unassigned"}
+                        </span>
+                        <span className="mt-0.5 block text-[13px]">
+                          {item.dueDate ? (
+                            <span className="text-muted-foreground">
+                              Due <time dateTime={item.dueDate}>{formatDate(item.dueDate)}</time>
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">No due date</span>
+                          )}
+                          {isOverdue(item) ? (
+                            <span className="font-medium text-attention"> · Overdue</span>
+                          ) : null}
+                          {carried > 0 ? (
+                            <span className="text-progress">
+                              {" "}
+                              · Carried over {carried}×
+                            </span>
+                          ) : null}
+                        </span>
                       </span>
-                    </span>
-                    <StatusBadge status={item.status} />
-                  </button>
-                </li>
-              ))}
+                      <StatusBadge status={item.state} />
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           </CardContent>
         </Card>
@@ -126,17 +141,21 @@ export function DashboardOperations({
         <Card className="lg:col-span-2 xl:col-span-1">
           <CardHeader>
             <CardTitle>Meeting agenda</CardTitle>
-            <CardDescription>Current and carried-over agenda items.</CardDescription>
+            <CardDescription>Proposed and on-agenda items.</CardDescription>
           </CardHeader>
           <CardContent className="px-0 pb-0">
             <ul className="divide-y divide-border border-t border-border">
-              {agendaItems.slice(0, 4).map((item) => (
+              {agenda.map((item) => (
                 <li key={item.id} className="flex items-start justify-between gap-3 px-5 py-3">
                   <div className="min-w-0">
                     <p className="text-[14px] font-medium text-foreground">{item.title}</p>
-                    <p className="mt-0.5 text-[13px] text-muted-foreground">{item.responsibility}</p>
+                    {item.responsibility ? (
+                      <p className="mt-0.5 text-[13px] text-muted-foreground">
+                        {item.responsibility}
+                      </p>
+                    ) : null}
                   </div>
-                  <StatusBadge status={item.status} />
+                  <StatusBadge status={item.state} />
                 </li>
               ))}
             </ul>
@@ -144,53 +163,75 @@ export function DashboardOperations({
         </Card>
       </section>
 
-      {selectedAssignment ? (
-        <AssignmentModal
-          assignment={selectedAssignment}
-          leadershipRoles={leadershipRoles}
-          onClose={() => setSelectedAssignmentId(null)}
-          onChange={updateAssignment}
+      {selected ? (
+        <CommitmentModal
+          commitment={selected}
+          seats={seats}
+          onClose={() => setSelectedId(null)}
+          onChange={updateCommitment}
         />
       ) : null}
     </>
   );
 }
 
-function AssignmentModal({
-  assignment,
-  leadershipRoles,
+function CommitmentModal({
+  commitment,
+  seats,
   onClose,
   onChange,
 }: {
-  assignment: Assignment;
-  leadershipRoles: LeadershipRole[];
+  commitment: Commitment;
+  seats: SeatWithHolder[];
   onClose: () => void;
-  onChange: (assignment: Assignment) => void;
+  onChange: (commitment: Commitment) => void;
 }) {
-  const [draft, setDraft] = useState(assignment);
+  const [draft, setDraft] = useState(commitment);
 
-  const selectedRole = useMemo(
-    () => leadershipRoles.find((role) => role.id === draft.ownerRole),
-    [draft.ownerRole, leadershipRoles],
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  const seat = useMemo(
+    () => seats.find((item) => item.id === draft.seatId),
+    [draft.seatId, seats],
   );
 
-  const updateDraft = <Key extends keyof Assignment>(key: Key, value: Assignment[Key]) => {
-    setDraft((currentDraft) => ({ ...currentDraft, [key]: value }));
+  const update = <Key extends keyof Commitment>(key: Key, value: Commitment[Key]) => {
+    setDraft((current) => ({ ...current, [key]: value }));
   };
 
-  const saveAndClose = () => {
-    onChange(draft);
-    onClose();
-  };
+  // Mirrors the database constraint: a committed item needs an owner and a date.
+  const canCommit = Boolean(draft.seatId && draft.dueDate);
+  const invalid = draft.state === "committed" && !canCommit;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/25 p-4">
-      <div className="w-full max-w-2xl rounded-lg border bg-card shadow-lg">
-        <div className="flex items-start justify-between gap-4 border-b p-5">
-          <div>
-            <h2 className="text-lg font-semibold">Assignment</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Local prototype edits only. Supabase updates come later.
+    <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4">
+      <button
+        type="button"
+        aria-label="Close"
+        onClick={onClose}
+        className="absolute inset-0 h-full w-full cursor-default bg-foreground/25"
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={draft.title}
+        className="relative flex max-h-[88vh] w-full max-w-2xl flex-col overflow-y-auto rounded-t-xl border border-border bg-card shadow-raised sm:rounded-xl"
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-border px-5 py-4">
+          <div className="min-w-0">
+            <h2 className="text-[16px] font-semibold tracking-[-0.01em]">Commitment</h2>
+            <p className="mt-0.5 text-[13px] text-muted-foreground">
+              Owned by the calling, not the person. Prototype edits are local only.
             </p>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose}>
@@ -198,127 +239,110 @@ function AssignmentModal({
           </Button>
         </div>
 
-        <div className="grid gap-4 p-5 sm:grid-cols-2">
-          <div className="flex flex-col gap-2 sm:col-span-2">
-            <label htmlFor="assignment-title" className="text-sm font-medium">
+        <div className="grid gap-4 px-5 py-5 sm:grid-cols-2">
+          <div className="flex flex-col gap-1.5 sm:col-span-2">
+            <label htmlFor="c-title" className="text-[13px] font-medium">
               Title
             </label>
             <Input
-              id="assignment-title"
+              id="c-title"
               value={draft.title}
-              onChange={(event) => updateDraft("title", event.target.value)}
+              onChange={(event) => update("title", event.target.value)}
             />
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label htmlFor="assignment-owner" className="text-sm font-medium">
-              Owner
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="c-seat" className="text-[13px] font-medium">
+              Owning calling
             </label>
             <select
-              id="assignment-owner"
-              value={draft.ownerRole}
-              onChange={(event) => {
-                const nextRole = leadershipRoles.find((role) => role.id === event.target.value);
-                if (!nextRole) return;
-                updateDraft("ownerRole", nextRole.id);
-                updateDraft("owner", nextRole.calling);
-                updateDraft("responsibility", nextRole.responsibilities[0] ?? draft.responsibility);
-              }}
-              className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              id="c-seat"
+              value={draft.seatId ?? ""}
+              onChange={(event) =>
+                update("seatId", (event.target.value || null) as SeatKey | null)
+              }
+              className="h-9 rounded-md border border-input bg-background px-2.5 text-sm outline-none transition-colors hover:border-border-strong focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary-soft"
             >
-              {leadershipRoles.map((role) => (
-                <option key={role.id} value={role.id}>
-                  {role.person} · {role.calling}
+              <option value="">Unassigned</option>
+              {seats.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.title}
+                  {item.holder ? ` — ${item.holder.name}` : ""}
                 </option>
               ))}
             </select>
+            {seat?.holder ? (
+              <p className="text-[12px] text-muted-foreground">
+                Currently held by {seat.holder.name}. Work stays with the calling on release.
+              </p>
+            ) : null}
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label htmlFor="assignment-responsibility" className="text-sm font-medium">
-              Responsibility
-            </label>
-            <select
-              id="assignment-responsibility"
-              value={draft.responsibility}
-              onChange={(event) => updateDraft("responsibility", event.target.value)}
-              className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              {(selectedRole?.responsibilities ?? [draft.responsibility]).map((responsibility) => (
-                <option key={responsibility} value={responsibility}>
-                  {responsibility}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label htmlFor="assignment-due-date" className="text-sm font-medium">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="c-due" className="text-[13px] font-medium">
               Due date
             </label>
             <Input
-              id="assignment-due-date"
+              id="c-due"
               type="date"
-              value={draft.dueDate}
-              onChange={(event) => updateDraft("dueDate", event.target.value)}
+              value={draft.dueDate ?? ""}
+              onChange={(event) => update("dueDate", event.target.value || null)}
             />
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label htmlFor="assignment-status" className="text-sm font-medium">
-              Status
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="c-state" className="text-[13px] font-medium">
+              State
             </label>
             <select
-              id="assignment-status"
-              value={draft.status}
-              onChange={(event) => updateDraft("status", event.target.value as Status)}
-              className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              id="c-state"
+              value={draft.state}
+              onChange={(event) => update("state", event.target.value as CommitmentState)}
+              className="h-9 rounded-md border border-input bg-background px-2.5 text-sm outline-none transition-colors hover:border-border-strong focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary-soft"
             >
-              {assignmentStatuses.map((status) => (
-                <option key={status} value={status}>
-                  {status}
+              {STATES.map((state) => (
+                <option key={state} value={state}>
+                  {statusLabel(state)}
                 </option>
               ))}
             </select>
           </div>
 
-          <div className="flex flex-col gap-2 sm:col-span-2">
-            <label htmlFor="assignment-context" className="text-sm font-medium">
-              Context
-            </label>
-            <Textarea
-              id="assignment-context"
-              value={`${draft.relatedModule} assignment for ${draft.responsibility}. Keep notes operational and avoid sensitive personal details.`}
-              readOnly
-            />
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[13px] font-medium">Source</span>
+            <p className="text-[13px] text-muted-foreground">
+              {draft.source
+                ? `Promoted from a ${draft.source.type} gap. Closing the record closes this.`
+                : "Free-standing. Closed by hand."}
+            </p>
           </div>
+
+          {invalid ? (
+            <p className="rounded-md bg-attention-soft px-3 py-2 text-[13px] text-attention sm:col-span-2">
+              A committed item needs both an owning calling and a due date.
+            </p>
+          ) : null}
         </div>
 
-        <div className="flex flex-col gap-2 border-t p-5 sm:flex-row sm:justify-between">
+        <div className="flex flex-col gap-2 border-t border-border px-5 py-4 sm:flex-row sm:justify-between">
           <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setDraft((currentDraft) => ({ ...currentDraft, status: "Completed" }))}
-            >
+            <Button variant="outline" size="sm" onClick={() => update("state", "done")}>
               <CheckCircle2 data-icon="inline-start" />
-              Mark complete
+              Mark done
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => setDraft((currentDraft) => ({ ...currentDraft, status: "Waiting" }))}
-            >
-              <CalendarPlus data-icon="inline-start" />
-              Add to agenda
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setDraft((currentDraft) => ({ ...currentDraft, status: "Archived" }))}
-            >
+            <Button variant="outline" size="sm" onClick={() => update("state", "on_agenda")}>
               <RotateCcw data-icon="inline-start" />
-              Archive
+              Put on agenda
             </Button>
           </div>
-          <Button onClick={saveAndClose}>
+          <Button
+            size="sm"
+            disabled={invalid}
+            onClick={() => {
+              onChange(draft);
+              onClose();
+            }}
+          >
             <FilePenLine data-icon="inline-start" />
             Save changes
           </Button>
@@ -326,23 +350,4 @@ function AssignmentModal({
       </div>
     </div>
   );
-}
-
-function countLabel(count: number, noun: string) {
-  return `${count} ${noun}${count === 1 ? "" : "s"}`;
-}
-
-function resolveRoleLabel(leadershipRoles: LeadershipRole[], roleId: string) {
-  const role = leadershipRoles.find((item) => item.id === roleId);
-  return role ? `${role.person} · ${role.calling}` : "Unassigned";
-}
-
-function isOverdue(assignment: Assignment) {
-  if (assignment.status === "Completed" || assignment.status === "Archived") {
-    return false;
-  }
-
-  const today = new Date();
-  const dueDate = new Date(`${assignment.dueDate}T23:59:59`);
-  return dueDate < today;
 }

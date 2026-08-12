@@ -3,10 +3,10 @@ import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { StatusBadge } from "@/components/status-badge";
 import { formatDate } from "@/lib/utils";
-import { agendaItems, assignments, leadershipRoles, templeInfo } from "@/lib/data";
+import { getHolder, getSeat, openCommitments, templeInfo } from "@/lib/data";
 
-const isTempleWork = (responsibility: string) =>
-  responsibility.toLowerCase().includes("temple");
+const isTempleWork = (responsibility: string | undefined) =>
+  (responsibility ?? "").toLowerCase().includes("temple");
 
 /*
   Rendered in two places by AppShell: the persistent right rail at xl and above,
@@ -15,14 +15,12 @@ const isTempleWork = (responsibility: string) =>
   the same component reads correctly in both.
 */
 export function TemplePanel() {
-  const templeAssignments = assignments.filter(
-    (item) => isTempleWork(item.responsibility) && item.status !== "Completed",
-  );
-  const templeAgenda = agendaItems.filter((item) => isTempleWork(item.responsibility));
+  // Pulled from the quorum's own work rather than maintained separately: any
+  // commitment whose responsibility mentions the temple surfaces here.
+  const templeWork = openCommitments().filter((item) => isTempleWork(item.responsibility));
   const templeNight = templeInfo.nextQuorumTempleNight;
-  const coordinator = templeNight
-    ? leadershipRoles.find((role) => role.id === templeNight.coordinatorRole)
-    : undefined;
+  const coordinatorSeat = templeNight ? getSeat(templeNight.coordinatorSeatId) : undefined;
+  const coordinator = templeNight ? getHolder(templeNight.coordinatorSeatId) : null;
 
   return (
     <div className="flex flex-col" aria-label="Temple information">
@@ -109,9 +107,10 @@ export function TemplePanel() {
             </time>
             <span className="font-normal text-muted-foreground"> · {templeNight.time}</span>
           </p>
-          {coordinator ? (
+          {coordinatorSeat ? (
             <p className="mt-1 text-[13px] text-muted-foreground">
-              Coordinated by {coordinator.person} · {coordinator.calling}
+              Coordinated by {coordinator?.name ?? coordinatorSeat.title}
+              {coordinator ? ` · ${coordinatorSeat.title}` : ""}
             </p>
           ) : null}
           <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
@@ -120,15 +119,15 @@ export function TemplePanel() {
         </Section>
       ) : null}
 
-      {templeAssignments.length || templeAgenda.length ? (
+      {templeWork.length ? (
         <Section title="Quorum temple work">
           <ul className="flex flex-col gap-3">
-            {[...templeAssignments, ...templeAgenda].map((item) => (
+            {templeWork.map((item) => (
               <li key={item.id} className="flex items-start justify-between gap-2">
                 <span className="min-w-0 text-[13px] leading-snug text-foreground">
                   {item.title}
                 </span>
-                <StatusBadge status={item.status} />
+                <StatusBadge status={item.state} />
               </li>
             ))}
           </ul>

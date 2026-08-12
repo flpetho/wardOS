@@ -8,14 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import type { LeadershipRole, WardOrganization } from "@/lib/types";
+import type { SeatWithHolder, WardOrganization } from "@/lib/types";
 
 type AdminState = {
   workspace: {
     name: string;
     slug: string;
   };
-  leadershipRoles: LeadershipRole[];
+  seats: SeatWithHolder[];
   organizations: WardOrganization[];
 };
 
@@ -23,16 +23,16 @@ const storageKey = "wardos-admin-prototype";
 
 export function AdminConsole({
   workspace,
-  leadershipRoles,
+  seats,
   organizations,
 }: {
   workspace: { name: string; slug: string };
-  leadershipRoles: LeadershipRole[];
+  seats: SeatWithHolder[];
   organizations: WardOrganization[];
 }) {
   const [adminState, setAdminState] = useState<AdminState>({
     workspace,
-    leadershipRoles,
+    seats,
     organizations,
   });
   const [savedAt, setSavedAt] = useState<string | null>(null);
@@ -50,12 +50,10 @@ export function AdminConsole({
     setSavedAt(new Date().toLocaleTimeString());
   };
 
-  const updateRole = (roleId: string, nextRole: LeadershipRole) => {
+  const updateSeat = (seatId: string, nextSeat: SeatWithHolder) => {
     setAdminState((current) => ({
       ...current,
-      leadershipRoles: current.leadershipRoles.map((role) =>
-        role.id === roleId ? nextRole : role,
-      ),
+      seats: current.seats.map((seat) => (seat.id === seatId ? nextSeat : seat)),
     }));
   };
 
@@ -154,49 +152,60 @@ export function AdminConsole({
 
       <Card>
         <CardHeader>
-          <CardTitle>EQ leadership</CardTitle>
-          <CardDescription>Manage the current presidency roster and calling labels.</CardDescription>
+          <CardTitle>Seats</CardTitle>
+          <CardDescription>
+            Callings are permanent; who holds one is a membership with dates. Changing the
+            holder is a release and a sustaining, not an edit here.
+          </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 lg:grid-cols-2">
-          {adminState.leadershipRoles.map((role) => (
-            <div key={role.id} className="rounded-md border p-4">
+          {adminState.seats.map((seat) => (
+            <div key={seat.id} className="rounded-md border border-border p-4">
               <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-medium">{role.title}</p>
-                  <p className="text-sm text-muted-foreground">{role.id.toUpperCase()}</p>
+                <div className="min-w-0">
+                  <p className="font-medium">{seat.title}</p>
+                  <p className="text-[13px] text-muted-foreground">
+                    Currently held by {seat.holder?.name ?? "nobody"}
+                  </p>
                 </div>
-                <Badge variant="outline">{role.calling}</Badge>
+                <div className="flex shrink-0 flex-col items-end gap-1.5">
+                  <Badge variant={seat.canAdminister ? "default" : "secondary"}>
+                    {seat.canAdminister ? "Steward" : "Participant"}
+                  </Badge>
+                  <span className="text-[12px] text-muted-foreground">{seat.type}</span>
+                </div>
               </div>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <div className="flex flex-col gap-2">
-                  <label htmlFor={`${role.id}-person`} className="text-sm font-medium">
-                    Person
-                  </label>
-                  <Input
-                    id={`${role.id}-person`}
-                    value={role.person}
-                    onChange={(event) => updateRole(role.id, { ...role, person: event.target.value })}
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label htmlFor={`${role.id}-calling`} className="text-sm font-medium">
+
+              <div className="mt-4 grid gap-3">
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor={`${seat.id}-title`} className="text-[13px] font-medium">
                     Calling title
                   </label>
                   <Input
-                    id={`${role.id}-calling`}
-                    value={role.calling}
-                    onChange={(event) => updateRole(role.id, { ...role, calling: event.target.value })}
+                    id={`${seat.id}-title`}
+                    value={seat.title}
+                    onChange={(event) => updateSeat(seat.id, { ...seat, title: event.target.value })}
                   />
                 </div>
-                <div className="flex flex-col gap-2 sm:col-span-2">
-                  <label htmlFor={`${role.id}-summary`} className="text-sm font-medium">
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor={`${seat.id}-summary`} className="text-[13px] font-medium">
                     Summary
                   </label>
                   <Textarea
-                    id={`${role.id}-summary`}
-                    value={role.summary}
-                    onChange={(event) => updateRole(role.id, { ...role, summary: event.target.value })}
+                    id={`${seat.id}-summary`}
+                    value={seat.summary}
+                    onChange={(event) => updateSeat(seat.id, { ...seat, summary: event.target.value })}
                   />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-[13px] font-medium">Areas</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {seat.areas.map((area) => (
+                      <Badge key={area} variant="outline">
+                        {area}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -222,7 +231,7 @@ export function AdminConsole({
                     <p className="text-sm text-muted-foreground">{organization.shortName}</p>
                   </div>
                 </div>
-                <Badge variant={organization.status === "Active" ? "default" : "outline"}>
+                <Badge variant={organization.status === "active" ? "default" : "outline"}>
                   {organization.status}
                 </Badge>
               </div>
@@ -272,9 +281,9 @@ export function AdminConsole({
                     }
                     className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <option value="Active">Active</option>
-                    <option value="Planned">Planned</option>
-                    <option value="Later">Later</option>
+                    <option value="active">Active</option>
+                    <option value="planned">Planned</option>
+                    <option value="later">Later</option>
                   </select>
                 </div>
                 <div className="flex flex-col gap-2 sm:col-span-2">

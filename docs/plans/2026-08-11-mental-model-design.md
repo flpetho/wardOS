@@ -181,6 +181,44 @@ Three tiers, down from the PRD's four. "Viewer" never had a real user.
 
 Budget is the only area-level exclusion. If others are added later they follow the same shape — tier-scoped area visibility, never per-record rules.
 
+### Seats carry an area scope, not a tier label
+
+Raised by the owner 2026-08-11: **ward callings outside the quorum will need access to parts of wardOS.** The concrete case is the person who runs the Sunday program. Today the Elders Quorum owns the program in wardOS, which is fine for a demo and wrong in the long run.
+
+That person needs `/program` and nothing else — not assignments, not cleaning, not budget. Three fixed tiers cannot express that.
+
+The generalisation is small and should be built now rather than retrofitted. A Seat declares:
+
+```
+Seat {
+  key, title, type
+  areas          -- 'all' | a set from a fixed enum
+  can_administer -- boolean
+}
+```
+
+The existing tiers become configurations of that one mechanism:
+
+| Seat | areas | can_administer |
+|---|---|---|
+| President, Counselors, Secretary | all | yes |
+| Stake high councilor | all except `budget` | no |
+| Program coordinator *(future)* | `program` only | within program |
+
+This stays a **capability matrix, not an access-control system**. Scope is per-area only, never per-record and never per-person; areas are a small fixed enum (`lessons`, `service`, `cleaning`, `signups`, `program`, `budget`, `meetings`, `sources`, `admin`). Roughly nine booleans per seat.
+
+Doing this at schema time costs almost nothing. Retrofitting it after auth ships means touching every query.
+
+### Deferred: does the Sunday program belong to the quorum at all?
+
+The deeper question behind the same observation, and one the PRD already anticipated (§24 Q2: *"Should Sunday Program be owned by Elders Quorum, bishopric, or general ward admin users?"*).
+
+Sacrament meeting is a **ward** artifact, not a quorum artifact. So are the building cleaning rotation and the ward calendar. The Elders Quorum owning them in wardOS is an artefact of the quorum being the first workspace built, not a claim about who they belong to.
+
+The eventual shape is likely a **ward scope above organisation scope**, with shared artifacts (program, calendar, building cleaning) living at ward level and organisations holding a scoped seat into them. That is the same structure that lets Relief Society, Young Men, and Primary join later without duplicating the program five times.
+
+**Not building this now.** It is v2/v3 territory and the roadmap already places multi-organisation at v3. Recorded so the near-term decision — area-scoped seats — is made in a way that does not block it.
+
 ---
 
 ## Schema deltas
@@ -232,8 +270,36 @@ A Gap needs something to read. Where no record exists, it must be a Commitment c
 
 This also validates the merge: `agenda-2` ("Porter move coverage") and `agenda-3` ("July 26 teacher still needed") are duplicates of Gaps already computable from the lesson and signup records. Under this model they cease to exist.
 
-## Open questions
+## Open question: personal commitments
 
-1. **Personal commitments.** Work belongs to seats, so a commitment made *because of who someone is* ("Ferenc will call Brother Porter — he knows him from work") transfers to a successor who has no relationship and no context.
+Work belongs to seats. That is right for the overwhelming majority of quorum work, but it breaks for commitments made *because of who someone is* rather than what seat they hold.
 
-   **Proposed:** an optional `held_by_person_id` alongside `seat_id`. The seat still owns the item so nothing orphans, but on release any personally-held item is flagged rather than silently transferred — *"Ferenc personally held 2 items. Still valid for Nielsen?"* Small schema cost, fires only on a rare event. **Awaiting owner decision.**
+### The example
+
+In a presidency meeting, working through the Porter move:
+
+> **Ferenc:** "I'll call Brother Porter tonight — I know him from work, he'll tell me straight what time they actually need us."
+
+wardOS records a Commitment owned by **First Counselor**, due tomorrow.
+
+That is fine while Ferenc holds the seat. Now play the release forward:
+
+1. Sunday: Ferenc is released. Brother Nielsen is sustained as First Counselor.
+2. Monday: Nielsen signs in for the first time and inherits the queue — correctly, by design, including *"Call Brother Porter tonight."*
+3. Nielsen has never met Brother Porter. He does not know why this was anyone's job, that the two men work together, or that the whole point was an honest answer only Ferenc would get.
+
+The task transferred. The **reason** did not. Nielsen is left with an instruction from nobody, and the most likely outcome is that he quietly drops it — which is exactly the failure mode seat-ownership was supposed to prevent.
+
+The general shape: *some work is assigned because of a relationship, and a relationship does not transfer with a calling.*
+
+### Proposed fix
+
+An optional `held_by_person_id` alongside `seat_id`:
+
+- The **seat still owns** the Commitment, so nothing orphans and the queue stays intact.
+- The person is recorded as who actually took it on.
+- On release, any personally-held item is **flagged rather than silently transferred**: *"Ferenc personally held 2 items. Still valid for Nielsen, or close them out?"*
+
+Cost is one nullable column and one prompt that fires only on a release. The alternative is to leave it out and rely on people writing the context into the item's detail field, which volunteers will not reliably do.
+
+**Awaiting owner decision.**

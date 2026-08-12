@@ -4,7 +4,7 @@ import { PageHeading } from "@/components/page-heading";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { serviceOpportunities } from "@/lib/data";
+import { getHolder, getSeat, serviceOpportunities } from "@/lib/data";
 
 export default function ServicePage() {
   return (
@@ -36,7 +36,10 @@ export default function ServicePage() {
               <div className="grid gap-3 text-sm sm:grid-cols-2">
                 <div className="rounded-md border p-3">
                   <p className="text-muted-foreground">Owner</p>
-                  <p className="font-medium">{item.owner}</p>
+                  <p className="font-medium">{getSeat(item.seatId)?.title ?? "Unassigned"}</p>
+                  {getHolder(item.seatId) ? (
+                    <p className="text-muted-foreground">{getHolder(item.seatId)?.name}</p>
+                  ) : null}
                 </div>
                 <div className="rounded-md border p-3">
                   <p className="text-muted-foreground">Needed</p>

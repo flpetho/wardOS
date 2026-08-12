@@ -11,6 +11,7 @@ import {
   DollarSign,
   HandHeart,
   Home,
+  Landmark,
   LinkIcon,
   Megaphone,
   Menu,
@@ -21,16 +22,13 @@ import {
   X,
 } from "lucide-react";
 import {
-  leadershipRoles,
   workspace,
-  assignments,
-  lessons,
-  serviceOpportunities,
-  cleaningAssignments,
-  agendaItems,
-  signupForms,
-  sundayProgram,
+  getSeatsWithHolders,
+  commitmentsForSeat,
+  computeGaps,
+  openCommitments,
 } from "@/lib/data";
+import type { SeatKey } from "@/lib/types";
 
 type NavItem = {
   href: string;
@@ -39,11 +37,12 @@ type NavItem = {
   icon: React.ComponentType<{ className?: string }>;
 };
 
-const leadershipIcons = {
+const seatIcons: Record<SeatKey, React.ComponentType<{ className?: string }>> = {
   eqp: Crown,
   eq1: Users,
   eq2: Users,
   eqs: ClipboardList,
+  hc: Landmark,
 };
 
 const navGroups: { label: string; items: NavItem[] }[] = [
@@ -53,11 +52,12 @@ const navGroups: { label: string; items: NavItem[] }[] = [
   },
   {
     label: "EQ Leadership",
-    items: leadershipRoles.map((role) => ({
-      href: `/leadership/${role.id}`,
-      label: role.person,
-      description: role.calling,
-      icon: leadershipIcons[role.id],
+    items: getSeatsWithHolders().map((seat) => ({
+      href: `/leadership/${seat.id}`,
+      // The seat is permanent; the holder is whoever currently occupies it.
+      label: seat.holder?.name ?? seat.title,
+      description: seat.title,
+      icon: seatIcons[seat.id],
     })),
   },
   {
@@ -82,55 +82,39 @@ const adminItem: NavItem = {
   icon: Settings,
 };
 
+/*
+  Badge counts are derived from the model rather than from hand-written status
+  string matching. A seat's badge is its open commitments; a work area's badge
+  is the number of computed gaps in that area. Nothing here can disagree with
+  the underlying records because nothing here stores anything.
+*/
 function getBadgeCount(href: string): number | null {
-  // Leadership Roles
   if (href.startsWith("/leadership/")) {
-    const roleId = href.split("/").pop();
-    const activeAssignments = assignments.filter(
-      (a) => a.ownerRole === roleId && a.status !== "Completed" && a.status !== "Archived"
-    );
-    return activeAssignments.length > 0 ? activeAssignments.length : null;
+    const seatId = href.split("/").pop() as SeatKey;
+    const count = commitmentsForSeat(seatId).length;
+    return count > 0 ? count : null;
   }
 
-  // Work Areas
-  switch (href) {
-    case "/meetings":
-      const activeAgenda = agendaItems.filter(
-        (item) => item.status === "On agenda" || item.status === "Carried over"
-      );
-      return activeAgenda.length > 0 ? activeAgenda.length : null;
-
-    case "/lessons":
-      const incompleteLessons = lessons.filter(
-        (l) =>
-          l.status === "Needs teacher" ||
-          l.topic.toLowerCase().includes("needs") ||
-          l.teacher.toLowerCase().includes("needs")
-      );
-      return incompleteLessons.length > 0 ? incompleteLessons.length : null;
-
-    case "/service":
-      const activeService = serviceOpportunities.filter(
-        (o) => o.status === "Open" || o.status === "Draft"
-      );
-      return activeService.length > 0 ? activeService.length : null;
-
-    case "/cleaning":
-      const incompleteCleaning = cleaningAssignments.filter(
-        (c) => c.status === "Needs families" || c.status === "Partially filled"
-      );
-      return incompleteCleaning.length > 0 ? incompleteCleaning.length : null;
-
-    case "/signups":
-      const openSignups = signupForms.filter((f) => f.status === "Open");
-      return openSignups.length > 0 ? openSignups.length : null;
-
-    case "/program":
-      return sundayProgram.status !== "Published" ? 1 : null;
-
-    default:
-      return null;
+  if (href === "/meetings") {
+    const count = openCommitments().filter(
+      (item) => item.state === "on_agenda" || item.state === "proposed",
+    ).length;
+    return count > 0 ? count : null;
   }
+
+  const areaForHref: Record<string, string> = {
+    "/lessons": "lessons",
+    "/service": "service",
+    "/cleaning": "cleaning",
+    "/signups": "signups",
+    "/program": "program",
+  };
+
+  const area = areaForHref[href];
+  if (!area) return null;
+
+  const count = computeGaps().filter((gap) => gap.area === area).length;
+  return count > 0 ? count : null;
 }
 
 function isRouteActive(pathname: string | null, href: string) {

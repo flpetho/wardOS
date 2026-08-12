@@ -7,11 +7,11 @@ import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
 import {
-  agendaItems,
-  assignments,
   budgetSummary,
   cleaningAssignments,
-  leadershipRoles,
+  commitments,
+  computeGaps,
+  getSeatsWithHolders,
   meetings,
   lessons,
   serviceOpportunities,
@@ -19,16 +19,23 @@ import {
   workspace,
 } from "@/lib/data";
 
-type Attention = {
-  id: string;
-  title: string;
-  area: string;
-  status: string;
+const AREA_LABELS: Record<string, string> = {
+  lessons: "Lessons",
+  service: "Service",
+  cleaning: "Cleaning",
+  signups: "Signups",
+  program: "Sunday program",
+  budget: "Budget",
+  meetings: "Meetings",
+  sources: "Sources",
+  admin: "Admin",
 };
 
 export default function DashboardPage() {
   const currentLesson = lessons[0];
-  const attention = buildAttentionList();
+  // The single action surface. Gaps are computed from the records themselves,
+  // so this list cannot disagree with the modules it summarises.
+  const attention = computeGaps();
   const budgetSpent = budgetSummary.categories.reduce((sum, item) => sum + item.spent, 0);
   const budgetPending = budgetSummary.categories.reduce((sum, item) => sum + item.pending, 0);
   const budgetRemaining = budgetSummary.totalAllocated - budgetSpent - budgetPending;
@@ -70,7 +77,9 @@ export default function DashboardPage() {
         <dl className="mt-4 overflow-hidden rounded-lg border border-border">
           <SundayRow label="Quorum lesson">
             <span className="font-medium text-foreground">{currentLesson.topic}</span>
-            <span className="text-muted-foreground"> · taught by {currentLesson.teacher}</span>
+            <span className="text-muted-foreground">
+              {currentLesson.teacher ? ` · taught by ${currentLesson.teacher}` : " · no teacher yet"}
+            </span>
           </SundayRow>
           <SundayRow label="Speakers">{sundayProgram.speakers.join(", ")}</SundayRow>
           <SundayRow label="Opening hymn">{sundayProgram.openingHymn}</SundayRow>
@@ -117,7 +126,9 @@ export default function DashboardPage() {
                   <span className="min-w-0 text-[14px] text-foreground">{item.title}</span>
                 </div>
                 <div className="flex shrink-0 items-center gap-3 pl-4 sm:pl-0">
-                  <span className="text-[13px] text-muted-foreground">{item.area}</span>
+                  <span className="text-[13px] text-muted-foreground">
+                    {AREA_LABELS[item.area] ?? item.area}
+                  </span>
                   <StatusBadge status={item.status} />
                 </div>
               </li>
@@ -133,9 +144,8 @@ export default function DashboardPage() {
       <DashboardCalendar initialEvents={buildCalendarEvents()} />
 
       <DashboardOperations
-        initialAssignments={assignments}
-        agendaItems={agendaItems}
-        leadershipRoles={leadershipRoles}
+        initialCommitments={commitments}
+        seats={getSeatsWithHolders()}
       />
 
       <section aria-labelledby="coverage" className="grid gap-5 lg:grid-cols-3">
@@ -236,62 +246,6 @@ function Panel({
   );
 }
 
-/*
-  Derived from status only. Deliberately avoids comparing against `new Date()` —
-  the dashboard is statically prerendered, so any build-time date comparison
-  bakes in at build and disagrees with the client on hydration. See STATE.md.
-*/
-function buildAttentionList(): Attention[] {
-  const items: Attention[] = [];
-
-  for (const lesson of lessons) {
-    if (lesson.status === "Needs teacher" || lesson.status === "Needs topic") {
-      items.push({
-        id: lesson.id,
-        title: `${formatDate(lesson.date)} lesson — ${lesson.topic}`,
-        area: "Lessons",
-        status: lesson.status,
-      });
-    }
-  }
-
-  for (const cleaning of cleaningAssignments) {
-    if (cleaning.status === "Needs families" || cleaning.status === "Partially filled") {
-      const short = cleaning.familiesNeeded - cleaning.confirmedFamilies.length;
-      items.push({
-        id: cleaning.id,
-        title: `${formatDate(cleaning.cleaningDate)} cleaning needs ${short} more ${short === 1 ? "family" : "families"}`,
-        area: "Cleaning",
-        status: cleaning.status,
-      });
-    }
-  }
-
-  for (const service of serviceOpportunities) {
-    if (service.status === "Draft") {
-      items.push({
-        id: service.id,
-        title: `${service.title} has not been opened for signups`,
-        area: "Service",
-        status: service.status,
-      });
-    }
-  }
-
-  for (const assignment of assignments) {
-    if (assignment.status === "Waiting") {
-      items.push({
-        id: assignment.id,
-        title: assignment.title,
-        area: assignment.relatedModule,
-        status: assignment.status,
-      });
-    }
-  }
-
-  return items;
-}
-
 function buildCalendarEvents(): CalendarEvent[] {
   return [
     ...lessons.map((lesson) => ({
@@ -300,12 +254,14 @@ function buildCalendarEvents(): CalendarEvent[] {
       title: lesson.topic,
       kind: "Lesson" as const,
     })),
-    ...assignments.map((assignment) => ({
-      id: assignment.id,
-      date: assignment.dueDate,
-      title: assignment.title,
-      kind: "Assignment" as const,
-    })),
+    ...commitments
+      .filter((item): item is typeof item & { dueDate: string } => Boolean(item.dueDate))
+      .map((item) => ({
+        id: item.id,
+        date: item.dueDate,
+        title: item.title,
+        kind: "Assignment" as const,
+      })),
     ...serviceOpportunities.map((service) => ({
       id: service.id,
       date: service.date,
