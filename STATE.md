@@ -8,9 +8,7 @@ Where wardOS actually stands. Read this first, every session.
 
 ## Resume here
 
-**All work lives on the branch `design-system-and-core-model`, not merged and — importantly — never pushed.** `main` still holds the original pre-redesign prototype. Merging is a decision the owner has not made yet; do not merge without asking.
-
-> **The branch exists only on the owner's laptop.** `git remote` is configured (`flpetho/wardOS`) but this branch has no upstream. Every commit since 2026-08-11 — the design system, the core model, the schema, the bulletin, and authentication — is one hard drive away from gone. Pushing it is the cheapest risk reduction available.
+**All work lives on the branch `design-system-and-core-model`, pushed to `origin` on 2026-08-13 but not merged.** `main` still holds the original pre-redesign prototype. Merging is a decision the owner has not made yet; do not merge without asking.
 
 **Authentication is done.** Supabase Auth with magic-link sign-in gates every internal route; identity is persisted in Postgres. **The next task is step 3, emphasis on the shared dashboard** — the signed-in seat's work loud, the rest of the presidency's quiet.
 
@@ -242,7 +240,7 @@ Found in the 2026-08-11 review. All verified by running the app, not inferred. N
 
 ## Notes
 
-- **All work since 2026-08-11 is on the branch `design-system-and-core-model`, not merged to `main` and never pushed to GitHub.** Design system, temple rail, docs and core model, schema rewrite, bulletin, then authentication and the button/accent rework. `main` still holds the pre-redesign prototype.
+- **All work since 2026-08-11 is on the branch `design-system-and-core-model`, pushed 2026-08-13, not merged to `main`.** Design system, temple rail, docs and core model, schema rewrite, bulletin, then authentication and the button/accent rework. `main` still holds the pre-redesign prototype.
 - `.agents/AGENTS.md` is now **actively misleading**, not merely stale — it documents `leadershipRoles`, `assignments`, and `agendaItems`, none of which exist after the model rewrite. Recommend deleting.
 - Port 3000 is often occupied on the owner's machine; dev sometimes lands on 3001.
 
