@@ -62,9 +62,12 @@ worth guarding.
 | **Wayfinding** — where you are, where you can go, where the keyboard is | cobalt `--primary` `#1D4ED8` | active nav, today in the calendar, links, focus rings |
 | **State** — how a thing stands | the status palette | badges, success confirmations |
 
-Plus one licensed exception: the **wardOS mark** in the sidebar is cobalt,
-because there a brand colour is doing brand work rather than pretending to be
-information.
+**There is no decorative exception.** Cobalt appears nowhere that is not
+wayfinding. The sidebar brand mark used to be the one licensed exception, on the
+grounds that a brand colour there was doing brand work — it was removed on
+2026-08-13 along with the wardOS wordmark, so the exception no longer needs
+defending. If you find yourself wanting cobalt for emphasis, the answer is
+weight or space, not colour.
 
 **History, so it is not undone by accident.** Until 2026-08-13 cobalt filled
 buttons *and* marked active navigation, *and* was sprinkled on progress meters, a

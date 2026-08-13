@@ -143,8 +143,12 @@ export function AppShell({
           >
             <Menu data-icon="" />
           </button>
-          <Link href="/dashboard" className="text-[15px] font-semibold tracking-[-0.01em]">
-            wardOS
+          {/* One line only — the ward is already implied on a phone at church. */}
+          <Link
+            href="/dashboard"
+            className="min-w-0 truncate text-[15px] font-semibold tracking-[-0.01em]"
+          >
+            {identity.organizationName ?? identity.wardName}
           </Link>
         </div>
         <Link
@@ -204,33 +208,33 @@ function SidebarBody({
   return (
     <>
       {/*
-        Three lines, ranked by what the reader needs.
+        Ward above, organisation below — address order, narrowing from where you
+        are to which part of it you are in.
 
-        The ORGANISATION is who you are in here and leads. The WARD is context,
-        so it drops to 11.5px and muted. wardOS itself is the smallest of the
-        three: you already know which app you opened, and the product name is
-        the least useful fact on the screen once a second organisation exists.
+        No product mark and no product name. Once several organisations of a
+        ward use wardOS, the useful question at the top of the sidebar is "whose
+        workspace am I in", and "wardOS" answers a question nobody is asking.
+        Removing it also retires the one licensed decorative use of cobalt, so
+        the accent is now purely wayfinding.
       */}
       <Link
         href="/dashboard"
-        className="flex items-center gap-2.5 px-4 py-4 transition-opacity hover:opacity-80"
+        className="block min-w-0 px-4 pb-3.5 pt-4 transition-opacity hover:opacity-80"
       >
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
-          <ClipboardList data-icon="" />
-        </span>
-        <span className="min-w-0">
-          <span className="block truncate text-[11px] font-semibold uppercase leading-tight tracking-[0.06em] text-subtle-foreground">
-            wardOS
-          </span>
-          <span className="block truncate text-[15px] font-semibold leading-tight tracking-[-0.01em]">
-            {identity.organizationName ?? identity.wardName}
-          </span>
-          {identity.organizationName ? (
+        {identity.organizationName ? (
+          <>
             <span className="block truncate text-[11.5px] leading-tight text-muted-foreground">
               {identity.wardName}
             </span>
-          ) : null}
-        </span>
+            <span className="mt-0.5 block truncate text-[15px] font-semibold leading-tight tracking-[-0.01em]">
+              {identity.organizationName}
+            </span>
+          </>
+        ) : (
+          <span className="block truncate text-[15px] font-semibold leading-tight tracking-[-0.01em]">
+            {identity.wardName}
+          </span>
+        )}
       </Link>
 
       <nav className="flex flex-1 flex-col gap-6 px-2.5 pb-4">

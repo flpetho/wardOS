@@ -26,8 +26,9 @@
   in the layout: when everything is emphasised, nothing is. Buttons moved to
   near-black on 2026-08-13, which left cobalt a single unambiguous job.
 
-  The one licensed exception is the wardOS mark in the sidebar, where a brand
-  colour is doing brand work rather than pretending to be information.
+  There is no decorative exception. The sidebar brand mark was the last one and
+  was removed the same day. If you want cobalt for emphasis, use weight or
+  space instead.
 
   Note on fonts: next/font exposes DM Sans as --font-dm-sans (see app/layout.tsx).
   It is deliberately NOT named --font-sans. An earlier version defined both on
