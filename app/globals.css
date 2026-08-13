@@ -3,9 +3,31 @@
 /*
   wardOS design tokens.
 
-  Palette: white field, near-black type, one cobalt accent. Status colour is
-  functional only — it never decorates. Hierarchy is carried by type, spacing,
-  and hairline dividers rather than by boxes, fills, or shadow.
+  Palette: white field, near-black type, one cobalt accent. Hierarchy is carried
+  by type, spacing, and hairline dividers rather than by boxes, fills, or shadow.
+
+  ---------------------------------------------------------------------------
+  COLOUR HAS THREE JOBS, AND EACH COLOUR DOES EXACTLY ONE
+  ---------------------------------------------------------------------------
+
+    ACTION      near-black --foreground, pill corners.
+                Buttons. Anything that commits something.
+
+    WAYFINDING  cobalt --primary.
+                Where you are (active nav, today in the calendar), where you
+                can go (links), and where the keyboard is (focus rings).
+
+    STATE       the status palette (--ok, --attention, --progress, --info).
+                How a thing stands. Never decoration.
+
+  Cobalt used to fill buttons AS WELL AS marking active navigation, and was
+  additionally sprinkled on progress meters, a success tick and a ward name.
+  One colour meaning four things is the same failure the core model diagnosed
+  in the layout: when everything is emphasised, nothing is. Buttons moved to
+  near-black on 2026-08-13, which left cobalt a single unambiguous job.
+
+  The one licensed exception is the wardOS mark in the sidebar, where a brand
+  colour is doing brand work rather than pretending to be information.
 
   Note on fonts: next/font exposes DM Sans as --font-dm-sans (see app/layout.tsx).
   It is deliberately NOT named --font-sans. An earlier version defined both on

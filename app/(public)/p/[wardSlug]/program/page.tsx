@@ -116,8 +116,8 @@ export default async function PublicProgramPage({
             {announcement.linkUrl ? (
               <Link
                 href={announcement.linkUrl}
-                className="mt-3 inline-flex items-center rounded-full border px-4 py-1.5 text-[12px] font-medium underline underline-offset-2 transition-opacity hover:opacity-70"
-                style={{ borderColor: INK }}
+                className="mt-3 inline-flex items-center rounded-full px-4 py-2 text-[12px] font-medium no-underline transition-opacity hover:opacity-80"
+                style={{ backgroundColor: INK, color: "#ffffff" }}
               >
                 {announcement.linkLabel ?? "Open"}
               </Link>

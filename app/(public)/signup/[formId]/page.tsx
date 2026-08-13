@@ -20,7 +20,7 @@ export default async function PublicSignupPage({
     <main className="min-h-screen bg-background px-4 py-6">
       <div className="mx-auto flex max-w-2xl flex-col gap-5">
         <header>
-          <p className="text-sm font-medium text-primary">{workspace.name}</p>
+          <p className="text-sm font-medium text-muted-foreground">{workspace.name}</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-normal">{form.title}</h1>
           <p className="mt-2 text-muted-foreground">{form.description}</p>
         </header>

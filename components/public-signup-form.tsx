@@ -14,7 +14,7 @@ export function PublicSignupForm({ form }: { form: SignupForm }) {
   if (submitted) {
     return (
       <div className="rounded-lg border bg-card p-5 text-center">
-        <CheckCircle2 className="mx-auto text-primary" />
+        <CheckCircle2 className="mx-auto text-ok" />
         <h2 className="mt-3 text-xl font-semibold">You are signed up</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           Thanks, {name}. The presidency will see your response in wardOS.
