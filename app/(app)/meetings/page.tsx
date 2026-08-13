@@ -7,15 +7,19 @@ import {
   carryOverCount,
   computeGaps,
   decisions,
-  getHolder,
-  getSeat,
   meetings,
   openCommitments,
 } from "@/lib/data";
+import { getSeatsWithHolders } from "@/lib/identity";
 import { formatDate } from "@/lib/utils";
-import type { Commitment } from "@/lib/types";
+import type { Commitment, SeatWithHolder } from "@/lib/types";
 
-export default function MeetingsPage() {
+export default async function MeetingsPage() {
+  // Seats come from the database now. Fetched once here and threaded down, so
+  // the page costs one query rather than one per row.
+  const seats = await getSeatsWithHolders();
+  const seatFor = (id: string | null | undefined) =>
+    seats.find((seat) => seat.id === id);
   const nextMeeting = meetings.find((meeting) => meeting.status === "open") ?? meetings[0];
   const open = openCommitments();
 
@@ -90,7 +94,7 @@ export default function MeetingsPage() {
             {onAgenda.length ? (
               <ul className="divide-y divide-border border-t border-border">
                 {onAgenda.map((item) => (
-                  <AgendaRow key={item.id} item={item} />
+                  <AgendaRow key={item.id} item={item} seats={seats} />
                 ))}
               </ul>
             ) : (
@@ -117,7 +121,7 @@ export default function MeetingsPage() {
                       <p className="text-[14px]">{gap.title}</p>
                       <p className="mt-0.5 text-[13px] text-muted-foreground">
                         {gap.claimedBy
-                          ? `Claimed by ${getSeat(gap.claimedBy)?.title}`
+                          ? `Claimed by ${seatFor(gap.claimedBy)?.title}`
                           : "Unclaimed"}
                       </p>
                     </div>
@@ -140,7 +144,7 @@ export default function MeetingsPage() {
             {inbox.length ? (
               <ul className="divide-y divide-border border-t border-border">
                 {inbox.map((item) => (
-                  <AgendaRow key={item.id} item={item} />
+                  <AgendaRow key={item.id} item={item} seats={seats} />
                 ))}
               </ul>
             ) : (
@@ -191,7 +195,7 @@ export default function MeetingsPage() {
         <CardContent className="px-0 pb-0">
           <ul className="divide-y divide-border border-t border-border">
             {decisions.map((decision) => {
-              const seat = getSeat(decision.decidedBySeatId);
+              const seat = seatFor(decision.decidedBySeatId);
               return (
                 <li key={decision.id} className="px-5 py-3">
                   <p className="text-[14px] font-medium">{decision.title}</p>
@@ -218,9 +222,9 @@ export default function MeetingsPage() {
   );
 }
 
-function AgendaRow({ item }: { item: Commitment }) {
-  const seat = getSeat(item.seatId);
-  const holder = item.seatId ? getHolder(item.seatId) : null;
+function AgendaRow({ item, seats }: { item: Commitment; seats: SeatWithHolder[] }) {
+  const seat = seats.find((candidate) => candidate.id === item.seatId);
+  const holder = seat?.holder ?? null;
 
   return (
     <li className="flex items-start justify-between gap-3 px-5 py-3">

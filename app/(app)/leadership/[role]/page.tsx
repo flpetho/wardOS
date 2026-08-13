@@ -5,13 +5,15 @@ import { StatusBadge } from "@/components/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getHolder, getSeat, getSeatWork, seats } from "@/lib/data";
+import { getSeatWork } from "@/lib/data";
+import { getSeat } from "@/lib/identity";
 import { formatDate } from "@/lib/utils";
-import type { SeatKey } from "@/lib/types";
 
-export function generateStaticParams() {
-  return seats.map((seat) => ({ role: seat.id }));
-}
+/*
+  generateStaticParams used to prerender one page per seat from the seed array.
+  Removed: seats live in Postgres now, and every route in this group reads the
+  session cookie, so none of them can be static regardless.
+*/
 
 export default async function LeadershipPage({
   params,
@@ -19,14 +21,14 @@ export default async function LeadershipPage({
   params: Promise<{ role: string }>;
 }) {
   const { role: roleParam } = await params;
-  const seat = getSeat(roleParam);
+  const seat = await getSeat(roleParam);
 
   if (!seat) {
     notFound();
   }
 
-  const holder = getHolder(seat.id as SeatKey);
-  const work = getSeatWork(seat.id as SeatKey);
+  const holder = seat.holder;
+  const work = getSeatWork(seat.id);
 
   const committed = work.commitments.filter((item) => item.state === "committed");
   const onAgenda = work.commitments.filter(

@@ -1,7 +1,5 @@
 import gilbertTemplePhoto from "@/img/gilbert-az-temple.png";
 import {
-  ALL_AREAS,
-  type Area,
   type BudgetSummary,
   type CleaningAssignment,
   type Commitment,
@@ -9,11 +7,8 @@ import {
   type Gap,
   type Lesson,
   type Meeting,
-  type Membership,
-  type Person,
-  type Seat,
+  type SeatCopy,
   type SeatKey,
-  type SeatWithHolder,
   type ServiceOpportunity,
   type SignupForm,
   type SundayProgram,
@@ -27,6 +22,10 @@ import {
 
   EVERY NAME HERE IS FICTIONAL except Ferenc Petho, the product owner. Nothing
   in this file describes a real ward, and none of it may reach production.
+
+  Identity has moved out. People, seats and memberships now live in Postgres and
+  are read through lib/identity.ts; what remains here is the editorial copy
+  attached to each seat, which has no schema and is only ever displayed.
 */
 
 export const workspace = {
@@ -38,30 +37,16 @@ export const workspace = {
 // People and seats
 // ---------------------------------------------------------------------------
 
-export const people: Person[] = [
-  { id: "person-nathan", name: "Nathan Placeholder" },
-  { id: "person-ferenc", name: "Ferenc Petho" },
-  { id: "person-marcus", name: "Marcus Placeholder" },
-  { id: "person-caleb", name: "Caleb Placeholder" },
-  { id: "person-david", name: "David Placeholder" },
-];
-
-/** Stewards reach everything. The liaison seat is scoped away from budget. */
-const stewardAreas: Area[] = ALL_AREAS;
-const liaisonAreas: Area[] = ALL_AREAS.filter(
-  (area) => area !== "budget" && area !== "admin",
-);
-
-export const seats: Seat[] = [
-  {
-    id: "eqp",
-    type: "presidency",
-    title: "President",
-    navLabel: "President",
-    summary:
-      "Coordinates quorum direction, bishopric alignment, ministering oversight, and presidency decisions.",
-    areas: stewardAreas,
-    canAdminister: true,
+/**
+ * Editorial copy attached to each seat.
+ *
+ * Deliberately NOT in the database. The seats table owns what decides access --
+ * area scope and can_administer -- so it cannot drift from what the row level
+ * security policies enforce. These three lists are only ever rendered, have no
+ * columns to migrate, and are easier to edit here.
+ */
+export const seatCopy: Record<SeatKey, SeatCopy> = {
+  eqp: {
     responsibilities: [
       "Presidency priorities",
       "Bishopric coordination",
@@ -79,17 +64,8 @@ export const seats: Seat[] = [
       "Do not store worthiness, abuse, financial, or private counseling notes.",
       "Ministering details should be tracked as operational follow-up, not sensitive family records.",
     ],
-    sortOrder: 1,
   },
-  {
-    id: "eq1",
-    type: "presidency",
-    title: "First Counselor",
-    navLabel: "First Counselor",
-    summary:
-      "Owns Family History and Service Assignments, with agenda items and follow-up work grouped here.",
-    areas: stewardAreas,
-    canAdminister: true,
+  eq1: {
     responsibilities: [
       "Temple and Family History",
       "Service Assignments",
@@ -106,17 +82,8 @@ export const seats: Seat[] = [
       "Track volunteer coordination, owners, and dates, not private circumstances behind a need.",
       "Link out to sensitive sources instead of copying personal details into wardOS.",
     ],
-    sortOrder: 2,
   },
-  {
-    id: "eq2",
-    type: "presidency",
-    title: "Second Counselor",
-    navLabel: "Second Counselor",
-    summary:
-      "Owns lessons, activities support, and cleaning coordination until the presidency refines domains.",
-    areas: stewardAreas,
-    canAdminister: true,
+  eq2: {
     responsibilities: [
       "Gospel instruction",
       "Activities",
@@ -133,17 +100,8 @@ export const seats: Seat[] = [
       "Lesson notes should stay about teaching plans, not private member concerns.",
       "Activities should remain simple coordination unless a richer planning module is needed.",
     ],
-    sortOrder: 3,
   },
-  {
-    id: "eqs",
-    type: "secretary",
-    title: "Secretary",
-    navLabel: "Secretary",
-    summary:
-      "Owns meeting notes, agenda hygiene, action item tracking, and source links.",
-    areas: stewardAreas,
-    canAdminister: true,
+  eqs: {
     responsibilities: [
       "Meeting notes",
       "Action item tracking",
@@ -160,17 +118,8 @@ export const seats: Seat[] = [
       "Meeting notes should capture operational decisions and action items, not private pastoral counseling.",
       "Sensitive sources remain link-only until intentionally reviewed.",
     ],
-    sortOrder: 4,
   },
-  {
-    id: "hc",
-    type: "liaison",
-    title: "Stake High Councilor",
-    navLabel: "High Councilor",
-    summary:
-      "Stake officer assigned to the quorum. Participates in presidency meetings and carries work back to the stake.",
-    areas: liaisonAreas,
-    canAdminister: false,
+  hc: {
     responsibilities: ["Stake liaison", "Meeting participation", "Stake follow-up"],
     handbookFocus: [
       "Represent the stake presidency in quorum presidency meetings.",
@@ -181,18 +130,8 @@ export const seats: Seat[] = [
       "Does not administer the workspace and cannot see the quorum budget.",
       "Stake matters stay with the stake; ward operational detail stays with the presidency.",
     ],
-    sortOrder: 5,
   },
-];
-
-/** Null activeUntil means currently serving. A release sets that date. */
-export const memberships: Membership[] = [
-  { id: "m-1", personId: "person-nathan", seatId: "eqp", activeFrom: "2025-03-02", activeUntil: null },
-  { id: "m-2", personId: "person-ferenc", seatId: "eq1", activeFrom: "2025-03-02", activeUntil: null },
-  { id: "m-3", personId: "person-marcus", seatId: "eq2", activeFrom: "2025-03-02", activeUntil: null },
-  { id: "m-4", personId: "person-caleb", seatId: "eqs", activeFrom: "2025-06-15", activeUntil: null },
-  { id: "m-5", personId: "person-david", seatId: "hc", activeFrom: "2026-01-11", activeUntil: null },
-];
+};
 
 // ---------------------------------------------------------------------------
 // Domain records — the system of record
@@ -649,32 +588,9 @@ export const templeInfo: TempleInfo = {
 // Lookups
 // ---------------------------------------------------------------------------
 
-export function getSeat(seatId: string | null | undefined) {
-  return seats.find((seat) => seat.id === seatId);
-}
-
-export function getPerson(personId: string | null | undefined) {
-  return people.find((person) => person.id === personId);
-}
-
-/** The person currently occupying a seat, or null between sustainings. */
-export function getHolder(seatId: SeatKey): Person | null {
-  const membership = memberships.find(
-    (item) => item.seatId === seatId && item.activeUntil === null,
-  );
-  return membership ? getPerson(membership.personId) ?? null : null;
-}
-
-export function getSeatsWithHolders(): SeatWithHolder[] {
-  return [...seats]
-    .sort((a, b) => a.sortOrder - b.sortOrder)
-    .map((seat) => ({ ...seat, holder: getHolder(seat.id) }));
-}
-
-export function canSeatAccess(seatId: SeatKey | null | undefined, area: Area) {
-  const seat = getSeat(seatId);
-  return seat ? seat.areas.includes(area) : false;
-}
+// getSeat, getPerson, getHolder, getSeatsWithHolders and canSeatAccess used to
+// live here, reading the seed arrays synchronously. They now read Postgres and
+// have moved to lib/identity.ts, where they are async.
 
 export function getSignupForm(formId: string) {
   return signupForms.find((form) => form.id === formId);

@@ -60,12 +60,18 @@ export type Seat = {
   sortOrder: number;
 };
 
+/**
+ * A human. Also the guest list: a valid Supabase session grants nothing without
+ * a row here whose email matches, plus a current Membership.
+ *
+ * The link to auth.users is the email, not a stored auth user id -- see the
+ * reasoning in the migration. Supabase Auth owns identity and nothing else; it
+ * never holds callings, which change constantly and differ per ward.
+ */
 export type Person = {
   id: string;
   name: string;
   email?: string;
-  /** Set once Clerk is wired. Clerk owns identity; it never owns callings. */
-  clerkUserId?: string;
 };
 
 /** Which person occupies which seat, for which period. */
@@ -79,6 +85,13 @@ export type Membership = {
 };
 
 export type SeatWithHolder = Seat & { holder: Person | null };
+
+/**
+ * The parts of a Seat that are editorial rather than operational. Held in
+ * lib/data.ts, not the database: the seats table owns what decides access, and
+ * these three lists are only ever displayed.
+ */
+export type SeatCopy = Pick<Seat, "responsibilities" | "handbookFocus" | "guardrails">;
 
 // ---------------------------------------------------------------------------
 // Commitments — the merged assignment + agenda item

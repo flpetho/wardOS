@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@clerk/nextjs": "latest",
+    "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "latest",
     "class-variance-authority": "latest",
     "clsx": "latest",

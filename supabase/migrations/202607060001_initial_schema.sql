@@ -31,15 +31,33 @@ create table if not exists workspaces (
   updated_at timestamptz not null default now()
 );
 
--- "people" rather than "users": Clerk owns identity, this table owns the human.
+-- "people" rather than "users": Supabase Auth owns identity in auth.users, this
+-- table owns the human. It is also the guest list -- a valid session grants
+-- nothing without a row here plus a current membership.
+--
+-- The link to auth.users is the EMAIL, not a stored auth user id. A stored id
+-- would have to be bound at first sign-in, which creates an ordering trap: a
+-- person who signs in before their row exists never gets bound, and is then
+-- locked out even after an admin adds them. Matching on email has no such
+-- ordering -- add the row, they refresh, they are in.
+--
+-- Magic-link sign-in is what makes this safe: possession of the inbox is proven
+-- before a session is issued, so the email in the JWT is not a self-asserted
+-- claim.
 create table if not exists people (
   id uuid primary key default gen_random_uuid(),
-  clerk_user_id text unique,
   name text not null,
   email text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+-- Email resolves a session to exactly one person, so duplicates must be
+-- impossible rather than merely discouraged. Case-insensitive because mail
+-- systems are, and a row typed as "Flpetho@" must not shadow "flpetho@".
+create unique index if not exists people_email_unique
+  on people (lower(email))
+  where email is not null;
 
 -- Areas a seat may be scoped to are enumerated inline in the check below.
 -- They name the app's own modules, not user data, so they are a fixed list.
@@ -402,9 +420,16 @@ create table if not exists import_candidates (
 -- ---------------------------------------------------------------------------
 -- Row level security
 --
--- Only the public policies are defined here. Internal policies require Clerk
--- claims to be wired first; until then nothing internal is reachable with the
--- anon key, which is the correct default.
+-- Two sets of policies are defined here:
+--
+--   * PUBLIC (role anon) -- published programs and open signup forms only.
+--   * IDENTITY (role authenticated) -- the four tables the app reads to answer
+--     "who is signed in and what seat do they hold".
+--
+-- The domain tables (lessons, service, cleaning, commitments, budget, ...) are
+-- deliberately left with no authenticated policy. The app still reads them from
+-- seed data in lib/data.ts, so a policy now would be speculative, and "no
+-- policy" fails closed rather than open.
 -- ---------------------------------------------------------------------------
 
 alter table workspaces enable row level security;
@@ -432,6 +457,105 @@ alter table temple_info enable row level security;
 alter table temple_closures enable row level security;
 alter table import_batches enable row level security;
 alter table import_candidates enable row level security;
+
+-- ---------------------------------------------------------------------------
+-- Identity helpers
+--
+-- Both are SECURITY DEFINER, and that is load-bearing rather than incidental.
+--
+-- is_member_of() reads memberships. The policy ON memberships calls
+-- is_member_of(). Evaluated as the calling user that is infinite recursion, and
+-- Postgres reports it as a stack-depth error that does not mention policies at
+-- all. Running as the function owner bypasses RLS on the read inside the
+-- function, which breaks the cycle. Same reasoning for current_person_id()
+-- reading people.
+--
+-- search_path is pinned because a SECURITY DEFINER function without it can be
+-- hijacked by a caller-controlled search_path.
+-- ---------------------------------------------------------------------------
+
+create or replace function public.current_person_id()
+  returns uuid
+  language sql
+  stable
+  security definer
+  set search_path = public
+as $$
+  select id
+  from people
+  where email is not null
+    and lower(email) = lower(auth.jwt() ->> 'email')
+  limit 1;
+$$;
+
+create or replace function public.is_member_of(target_workspace uuid)
+  returns boolean
+  language sql
+  stable
+  security definer
+  set search_path = public
+as $$
+  select exists (
+    select 1
+    from memberships
+    where memberships.workspace_id = target_workspace
+      and memberships.person_id = public.current_person_id()
+      -- A released person keeps their history but loses access the same day.
+      and memberships.active_until is null
+  );
+$$;
+
+revoke execute on function public.current_person_id() from anon;
+revoke execute on function public.is_member_of(uuid) from anon;
+grant execute on function public.current_person_id() to authenticated;
+grant execute on function public.is_member_of(uuid) to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Identity policies. Read-only: nothing in the app writes identity yet, and
+-- people are added by hand in the Supabase table editor.
+-- ---------------------------------------------------------------------------
+
+create policy "Members read their own workspaces"
+  on workspaces for select to authenticated
+  using (public.is_member_of(id));
+
+create policy "Members read seats in their workspaces"
+  on seats for select to authenticated
+  using (public.is_member_of(workspace_id));
+
+create policy "Members read responsibilities of seats they can see"
+  on seat_responsibilities for select to authenticated
+  using (
+    exists (
+      select 1 from seats
+      where seats.id = seat_responsibilities.seat_id
+        and public.is_member_of(seats.workspace_id)
+    )
+  );
+
+create policy "Members read memberships in their workspaces"
+  on memberships for select to authenticated
+  using (public.is_member_of(workspace_id));
+
+-- People are not workspace-scoped -- membership is what ties a person to a
+-- workspace -- so visibility is "someone I share a workspace with", plus
+-- yourself. The self clause matters: without it a signed-in person with no
+-- membership could not read their own row, and the no-access page would have
+-- no name to show.
+create policy "Members read people they share a workspace with"
+  on people for select to authenticated
+  using (
+    id = public.current_person_id()
+    or exists (
+      select 1 from memberships m
+      where m.person_id = people.id
+        and public.is_member_of(m.workspace_id)
+    )
+  );
+
+-- ---------------------------------------------------------------------------
+-- Public policies (role anon)
+-- ---------------------------------------------------------------------------
 
 create policy "Public can read published programs"
   on sunday_programs for select

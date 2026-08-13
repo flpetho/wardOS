@@ -1,9 +1,24 @@
+import { notFound } from "next/navigation";
 import { DollarSign } from "lucide-react";
 import { PageHeading } from "@/components/page-heading";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { budgetSummary } from "@/lib/data";
+import { getActiveSession, seatCanAccess } from "@/lib/identity";
 
-export default function BudgetPage() {
+export default async function BudgetPage() {
+  /*
+    Budget is the one area-level exclusion in the core model: the stake high
+    councilor is a stake officer participating in ward operations, not a member
+    of the presidency that stewards the ward's money.
+
+    The nav hides it for him. This is what enforces it -- omitting a link is
+    presentation, and a page that still renders on direct navigation is a leak.
+  */
+  const session = await getActiveSession();
+  if (!seatCanAccess(session?.seat, "budget")) {
+    notFound();
+  }
+
   const budgetSpent = budgetSummary.categories.reduce((sum, item) => sum + item.spent, 0);
   const budgetPending = budgetSummary.categories.reduce((sum, item) => sum + item.pending, 0);
   const budgetRemaining = budgetSummary.totalAllocated - budgetSpent - budgetPending;
@@ -65,7 +80,7 @@ export default function BudgetPage() {
                   </div>
                   <div className="mt-3 h-2 rounded-full bg-muted">
                     <div
-                      className="h-2 rounded-full bg-primary"
+                      className="h-2 rounded-full bg-foreground"
                       style={{ width: `${percent}%` }}
                     />
                   </div>

@@ -3,7 +3,8 @@ import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { StatusBadge } from "@/components/status-badge";
 import { formatDate } from "@/lib/utils";
-import { getHolder, getSeat, openCommitments, templeInfo } from "@/lib/data";
+import { openCommitments, templeInfo } from "@/lib/data";
+import { getHolder, getSeat } from "@/lib/identity";
 
 const isTempleWork = (responsibility: string | undefined) =>
   (responsibility ?? "").toLowerCase().includes("temple");
@@ -14,13 +15,17 @@ const isTempleWork = (responsibility: string | undefined) =>
   carries no outer border or radius — the container it sits in owns those, so
   the same component reads correctly in both.
 */
-export function TemplePanel() {
+export async function TemplePanel() {
   // Pulled from the quorum's own work rather than maintained separately: any
   // commitment whose responsibility mentions the temple surfaces here.
   const templeWork = openCommitments().filter((item) => isTempleWork(item.responsibility));
   const templeNight = templeInfo.nextQuorumTempleNight;
-  const coordinatorSeat = templeNight ? getSeat(templeNight.coordinatorSeatId) : undefined;
-  const coordinator = templeNight ? getHolder(templeNight.coordinatorSeatId) : null;
+  const coordinatorSeat = templeNight
+    ? await getSeat(templeNight.coordinatorSeatId)
+    : undefined;
+  const coordinator = templeNight
+    ? await getHolder(templeNight.coordinatorSeatId)
+    : null;
 
   return (
     <div className="flex flex-col" aria-label="Temple information">

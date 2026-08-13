@@ -11,13 +11,13 @@ import {
   cleaningAssignments,
   commitments,
   computeGaps,
-  getSeatsWithHolders,
   meetings,
   lessons,
   serviceOpportunities,
   sundayProgram,
   workspace,
 } from "@/lib/data";
+import { getSeatsWithHolders } from "@/lib/identity";
 
 const AREA_LABELS: Record<string, string> = {
   lessons: "Lessons",
@@ -31,7 +31,7 @@ const AREA_LABELS: Record<string, string> = {
   admin: "Admin",
 };
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
   const currentLesson = lessons[0];
   // The single action surface. Gaps are computed from the records themselves,
   // so this list cannot disagree with the modules it summarises.
@@ -150,7 +150,7 @@ export default function DashboardPage() {
 
       <DashboardOperations
         initialCommitments={commitments}
-        seats={getSeatsWithHolders()}
+        seats={await getSeatsWithHolders()}
       />
 
       <section aria-labelledby="coverage" className="grid gap-5 lg:grid-cols-3">
@@ -204,7 +204,7 @@ export default function DashboardPage() {
               aria-label={`${budgetUsedPercent}% of the budget committed`}
             >
               <div
-                className="h-full rounded-full bg-primary"
+                className="h-full rounded-full bg-foreground"
                 style={{ width: `${budgetUsedPercent}%` }}
               />
             </div>

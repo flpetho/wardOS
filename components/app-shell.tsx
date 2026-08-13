@@ -13,6 +13,7 @@ import {
   Home,
   Landmark,
   LinkIcon,
+  LogOut,
   Megaphone,
   Menu,
   NotebookTabs,
@@ -21,101 +22,45 @@ import {
   Users,
   X,
 } from "lucide-react";
-import {
-  workspace,
-  getSeatsWithHolders,
-  commitmentsForSeat,
-  computeGaps,
-  openCommitments,
-} from "@/lib/data";
-import type { SeatKey } from "@/lib/types";
-
-type NavItem = {
-  href: string;
-  label: string;
-  description?: string;
-  icon: React.ComponentType<{ className?: string }>;
-};
-
-const seatIcons: Record<SeatKey, React.ComponentType<{ className?: string }>> = {
-  eqp: Crown,
-  eq1: Users,
-  eq2: Users,
-  eqs: ClipboardList,
-  hc: Landmark,
-};
-
-const navGroups: { label: string; items: NavItem[] }[] = [
-  {
-    label: "Command",
-    items: [{ href: "/dashboard", label: "Dashboard", icon: Home }],
-  },
-  {
-    label: "EQ Leadership",
-    items: getSeatsWithHolders().map((seat) => ({
-      href: `/leadership/${seat.id}`,
-      // The seat is permanent; the holder is whoever currently occupies it.
-      label: seat.holder?.name ?? seat.title,
-      description: seat.title,
-      icon: seatIcons[seat.id],
-    })),
-  },
-  {
-    label: "Work Areas",
-    items: [
-      { href: "/meetings", label: "Meetings", icon: NotebookTabs },
-      { href: "/lessons", label: "Lessons", icon: CalendarDays },
-      { href: "/service", label: "Service", icon: HandHeart },
-      { href: "/cleaning", label: "Cleaning", icon: Sparkles },
-      { href: "/budget", label: "Budget", icon: DollarSign },
-      { href: "/program", label: "Program", icon: Megaphone },
-      { href: "/signups", label: "Signups", icon: Users },
-      { href: "/sources", label: "Sources", icon: LinkIcon },
-    ],
-  },
-];
-
-const adminItem: NavItem = {
-  href: "/admin",
-  label: "Admin",
-  description: "Ward settings",
-  icon: Settings,
-};
+import type { IconKey, NavGroup, NavItem } from "@/lib/nav";
 
 /*
-  Badge counts are derived from the model rather than from hand-written status
-  string matching. A seat's badge is its open commitments; a work area's badge
-  is the number of computed gaps in that area. Nothing here can disagree with
-  the underlying records because nothing here stores anything.
+  Presentational only. Everything it renders is decided on the server in
+  lib/nav.ts and handed down as props -- which seats exist, which areas this
+  seat may reach, and every badge count.
+
+  It used to build its own nav at module scope by importing the seed data. That
+  could not survive seats moving to Postgres, and it was also the root cause of
+  known defect 7: module-level counts cannot react to anything.
 */
-function getBadgeCount(href: string): number | null {
-  if (href.startsWith("/leadership/")) {
-    const seatId = href.split("/").pop() as SeatKey;
-    const count = commitmentsForSeat(seatId).length;
-    return count > 0 ? count : null;
-  }
 
-  if (href === "/meetings") {
-    const count = openCommitments().filter(
-      (item) => item.state === "on_agenda" || item.state === "proposed",
-    ).length;
-    return count > 0 ? count : null;
-  }
+/**
+ * Icons cross the server/client boundary as string keys, because a function is
+ * not serializable. This is where they become components again.
+ */
+const icons: Record<IconKey, React.ComponentType<{ className?: string }>> = {
+  dashboard: Home,
+  president: Crown,
+  counselor: Users,
+  secretary: ClipboardList,
+  liaison: Landmark,
+  meetings: NotebookTabs,
+  lessons: CalendarDays,
+  service: HandHeart,
+  cleaning: Sparkles,
+  budget: DollarSign,
+  program: Megaphone,
+  signups: Users,
+  sources: LinkIcon,
+  admin: Settings,
+};
 
-  const areaForHref: Record<string, string> = {
-    "/lessons": "lessons",
-    "/service": "service",
-    "/cleaning": "cleaning",
-    "/signups": "signups",
-    "/program": "program",
-  };
-
-  const area = areaForHref[href];
-  if (!area) return null;
-
-  const count = computeGaps().filter((gap) => gap.area === area).length;
-  return count > 0 ? count : null;
-}
+export type AppShellIdentity = {
+  personName: string;
+  seatTitle: string;
+  workspaceName: string;
+  workspaceSlug: string;
+};
 
 function isRouteActive(pathname: string | null, href: string) {
   if (!pathname) return false;
@@ -126,10 +71,16 @@ function isRouteActive(pathname: string | null, href: string) {
 export function AppShell({
   children,
   aside,
+  nav,
+  adminItem,
+  identity,
 }: {
   children: React.ReactNode;
   /** Persistent reference rail. Fixed to the right at xl, inside the drawer below it. */
   aside?: React.ReactNode;
+  nav: NavGroup[];
+  adminItem: NavItem | null;
+  identity: AppShellIdentity;
 }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -154,10 +105,19 @@ export function AppShell({
     };
   }, [menuOpen]);
 
+  const sidebar = (
+    <SidebarBody
+      pathname={pathname}
+      nav={nav}
+      adminItem={adminItem}
+      identity={identity}
+    />
+  );
+
   return (
     <div className="min-h-screen bg-background">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[260px] flex-col overflow-y-auto border-r border-border bg-surface lg:flex">
-        <SidebarBody pathname={pathname} />
+        {sidebar}
       </aside>
 
       {aside ? (
@@ -185,7 +145,7 @@ export function AppShell({
           </Link>
         </div>
         <Link
-          href={`/p/${workspace.slug}/program`}
+          href={`/p/${identity.workspaceSlug}/program`}
           className="text-[13px] font-medium text-primary transition-colors hover:text-primary-hover"
         >
           Public program
@@ -209,7 +169,7 @@ export function AppShell({
             >
               <X data-icon="" />
             </button>
-            <SidebarBody pathname={pathname} />
+            {sidebar}
             {aside ? (
               <div className="border-t border-border bg-background">{aside}</div>
             ) : null}
@@ -227,7 +187,17 @@ export function AppShell({
   );
 }
 
-function SidebarBody({ pathname }: { pathname: string | null }) {
+function SidebarBody({
+  pathname,
+  nav,
+  adminItem,
+  identity,
+}: {
+  pathname: string | null;
+  nav: NavGroup[];
+  adminItem: NavItem | null;
+  identity: AppShellIdentity;
+}) {
   return (
     <>
       <Link
@@ -242,13 +212,13 @@ function SidebarBody({ pathname }: { pathname: string | null }) {
             wardOS
           </span>
           <span className="block truncate text-[12px] leading-tight text-muted-foreground">
-            {workspace.name}
+            {identity.workspaceName}
           </span>
         </span>
       </Link>
 
       <nav className="flex flex-1 flex-col gap-6 px-2.5 pb-4">
-        {navGroups.map((group) => (
+        {nav.map((group) => (
           <div key={group.label} className="flex flex-col gap-0.5">
             <p className="px-2.5 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
               {group.label}
@@ -258,33 +228,50 @@ function SidebarBody({ pathname }: { pathname: string | null }) {
                 key={item.href}
                 item={item}
                 active={isRouteActive(pathname, item.href)}
-                badge={getBadgeCount(item.href)}
               />
             ))}
           </div>
         ))}
       </nav>
 
-      <div className="border-t border-border px-2.5 py-3">
-        <NavLink
-          item={adminItem}
-          active={isRouteActive(pathname, adminItem.href)}
-          badge={getBadgeCount(adminItem.href)}
-        />
+      {adminItem ? (
+        <div className="border-t border-border px-2.5 py-3">
+          <NavLink item={adminItem} active={isRouteActive(pathname, adminItem.href)} />
+        </div>
+      ) : null}
+
+      {/*
+        Who you are signed in as. Worth the space: work is owned by the seat, so
+        the seat is the thing that decides what this session may do, and during
+        testing one person signs in as several.
+      */}
+      <div className="flex items-center gap-2 border-t border-border px-4 py-3">
+        <span className="min-w-0 flex-1 leading-tight">
+          <span className="block truncate text-[13px] font-medium">
+            {identity.personName}
+          </span>
+          <span className="block truncate text-[11.5px] text-muted-foreground">
+            {identity.seatTitle}
+          </span>
+        </span>
+        <form action="/auth/sign-out" method="post">
+          <button
+            type="submit"
+            aria-label="Sign out"
+            title="Sign out"
+            className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <LogOut data-icon="" />
+          </button>
+        </form>
       </div>
     </>
   );
 }
 
-function NavLink({
-  item,
-  active,
-  badge,
-}: {
-  item: NavItem;
-  active: boolean;
-  badge: number | null;
-}) {
+function NavLink({ item, active }: { item: NavItem; active: boolean }) {
+  const Icon = icons[item.icon];
+
   return (
     <Link
       href={item.href}
@@ -296,7 +283,7 @@ function NavLink({
           : "text-muted-foreground hover:bg-muted hover:text-foreground",
       )}
     >
-      <item.icon
+      <Icon
         data-icon=""
         className={cn(active ? "text-primary" : "text-subtle-foreground group-hover:text-muted-foreground")}
       />
@@ -313,7 +300,7 @@ function NavLink({
           </span>
         ) : null}
       </span>
-      {badge !== null ? (
+      {item.badge !== null ? (
         <span
           data-numeric
           className={cn(
@@ -321,7 +308,7 @@ function NavLink({
             active ? "text-primary/80" : "text-muted-foreground",
           )}
         >
-          {badge}
+          {item.badge}
         </span>
       ) : null}
     </Link>

@@ -4,9 +4,14 @@ import { PageHeading } from "@/components/page-heading";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getHolder, getSeat, serviceOpportunities } from "@/lib/data";
+import { serviceOpportunities } from "@/lib/data";
+import { getSeatsWithHolders } from "@/lib/identity";
 
-export default function ServicePage() {
+export default async function ServicePage() {
+  // Resolved once rather than per card: seats now come from the database, and a
+  // lookup inside the map would be a query per row.
+  const seats = await getSeatsWithHolders();
+
   return (
     <>
       <PageHeading
@@ -20,7 +25,10 @@ export default function ServicePage() {
         }
       />
       <section className="grid gap-4 lg:grid-cols-2">
-        {serviceOpportunities.map((item) => (
+        {serviceOpportunities.map((item) => {
+          const seat = seats.find((candidate) => candidate.id === item.seatId);
+
+          return (
           <Card key={item.id}>
             <CardHeader>
               <div className="flex items-start justify-between gap-3">
@@ -36,9 +44,9 @@ export default function ServicePage() {
               <div className="grid gap-3 text-sm sm:grid-cols-2">
                 <div className="rounded-md border p-3">
                   <p className="text-muted-foreground">Owner</p>
-                  <p className="font-medium">{getSeat(item.seatId)?.title ?? "Unassigned"}</p>
-                  {getHolder(item.seatId) ? (
-                    <p className="text-muted-foreground">{getHolder(item.seatId)?.name}</p>
+                  <p className="font-medium">{seat?.title ?? "Unassigned"}</p>
+                  {seat?.holder ? (
+                    <p className="text-muted-foreground">{seat.holder.name}</p>
                   ) : null}
                 </div>
                 <div className="rounded-md border p-3">
@@ -54,7 +62,8 @@ export default function ServicePage() {
               </Link>
             </CardContent>
           </Card>
-        ))}
+          );
+        })}
       </section>
     </>
   );
