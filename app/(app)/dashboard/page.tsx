@@ -5,7 +5,7 @@ import { DashboardCalendar, type CalendarEvent } from "@/components/dashboard-ca
 import { DashboardOperations } from "@/components/dashboard-operations";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
-import { formatDate, formatHymn } from "@/lib/utils";
+import { cn, formatDate, formatHymn } from "@/lib/utils";
 import {
   budgetSummary,
   cleaningAssignments,
@@ -17,7 +17,7 @@ import {
   sundayProgram,
   workspace,
 } from "@/lib/data";
-import { getSeatsWithHolders } from "@/lib/identity";
+import { getActiveSession, getSeatsWithHolders, seatCanAccess } from "@/lib/identity";
 
 const AREA_LABELS: Record<string, string> = {
   lessons: "Lessons",
@@ -32,10 +32,30 @@ const AREA_LABELS: Record<string, string> = {
 };
 
 export default async function DashboardPage() {
+  /*
+    Budget is the one area-level exclusion in the core model, and it has to be
+    honoured HERE as well as in the nav. Hiding the sidebar link while this
+    panel still printed the remaining balance meant the high councilor saw the
+    exact figure the model says he must not -- the nav was the decoration and
+    this was the leak.
+  */
+  const session = await getActiveSession();
+  const showBudget = seatCanAccess(session?.seat, "budget");
+
   const currentLesson = lessons[0];
   // The single action surface. Gaps are computed from the records themselves,
   // so this list cannot disagree with the modules it summarises.
-  const attention = computeGaps();
+  /*
+    Gaps are area-tagged, so they carry the same exposure as the panels above.
+    computeGaps() produces nothing in the budget area today, so this filters
+    nothing yet -- it is here because the moment it does, an ungated list would
+    leak the excluded area straight into "needs attention", which is the most
+    prominent surface on the page. Same defect as the budget panel, one step
+    from happening.
+  */
+  const attention = computeGaps().filter((gap) =>
+    seatCanAccess(session?.seat, gap.area),
+  );
   const budgetSpent = budgetSummary.categories.reduce((sum, item) => sum + item.spent, 0);
   const budgetPending = budgetSummary.categories.reduce((sum, item) => sum + item.pending, 0);
   const budgetRemaining = budgetSummary.totalAllocated - budgetSpent - budgetPending;
@@ -153,9 +173,12 @@ export default async function DashboardPage() {
         seats={await getSeatsWithHolders()}
       />
 
-      <section aria-labelledby="coverage" className="grid gap-5 lg:grid-cols-3">
+      <section
+        aria-labelledby="coverage"
+        className={cn("grid gap-5", showBudget ? "lg:grid-cols-3" : "lg:grid-cols-2")}
+      >
         <h2 id="coverage" className="sr-only">
-          Service, cleaning, and budget
+          {showBudget ? "Service, cleaning, and budget" : "Service and cleaning"}
         </h2>
 
         <Panel title="Service" href="/service" linkLabel="All service">
@@ -190,6 +213,7 @@ export default async function DashboardPage() {
           ))}
         </Panel>
 
+        {showBudget ? (
         <Panel title="Budget" href="/budget" linkLabel="Full budget">
           <div>
             <p data-numeric className="text-[22px] font-semibold tracking-[-0.02em] text-foreground">
@@ -210,6 +234,7 @@ export default async function DashboardPage() {
             </div>
           </div>
         </Panel>
+        ) : null}
       </section>
     </>
   );

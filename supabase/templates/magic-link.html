@@ -1,38 +1,3 @@
-<!--
-  wardOS sign-in email.
-
-  Paste into the Supabase dashboard: Authentication -> Emails.
-
-  PASTE IT INTO BOTH TEMPLATES:
-    * "Magic Link"     - sent to people who have signed in before
-    * "Confirm signup" - sent the FIRST time an address is used
-
-  signInWithOtp creates the auth user when it does not exist, so a person's very
-  first sign-in triggers "Confirm signup", not "Magic Link". Customising only the
-  latter leaves the default Supabase email as the first thing anyone ever sees,
-  which is precisely the one that needs to look trustworthy.
-
-  Suggested subject line for both:
-    Sign in to wardOS
-
-  ---------------------------------------------------------------------------
-  CROSS-DEVICE NOTE
-
-  {{ .ConfirmationURL }} uses the PKCE flow: the link must be opened in the same
-  browser that requested it. Request on a laptop, open on a phone, and it fails.
-
-  To make it work across devices, replace the href below with:
-
-    {{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=magiclink&next=/dashboard
-
-  and in the "Confirm signup" template use type=signup instead of type=magiclink.
-  app/auth/callback/route.ts already handles both shapes, so this is a dashboard
-  change with no code change.
-  ---------------------------------------------------------------------------
-
-  Email clients strip <style> blocks and do not load webfonts, so everything
-  here is inline and the font stack degrades to the reader's system sans.
--->
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
        style="background:#ffffff;margin:0;padding:32px 16px;">
   <tr>

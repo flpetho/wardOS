@@ -34,7 +34,7 @@ export function SignInForm({ next, initialError }: { next: string; initialError?
   if (status.kind === "sent") {
     return (
       <div className="rounded-lg border border-border bg-surface px-5 py-6 text-center">
-        <Mail className="mx-auto size-5 text-primary" />
+        <Mail className="mx-auto size-5 text-foreground" />
         <p className="mt-3 text-[15px] font-medium">Check your email</p>
         <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">
           A sign-in link is on its way to{" "}
@@ -44,7 +44,7 @@ export function SignInForm({ next, initialError }: { next: string; initialError?
         <button
           type="button"
           onClick={() => setStatus({ kind: "idle" })}
-          className="mt-4 text-[13px] font-medium text-primary hover:text-primary-hover"
+          className="mt-4 text-[13px] font-medium text-foreground transition-opacity hover:opacity-70"
         >
           Use a different address
         </button>

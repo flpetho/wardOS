@@ -16,6 +16,15 @@ The high councilor is a **stake officer assigned to the quorum, not a member of 
 
 **Future — other ward presidencies.** The product owner intends to test with his own presidency first, then pitch to other presidencies in the same ward (Relief Society, Young Men, Young Women, Primary, bishopric). This is a confirmed intent, not a shipped capability.
 
+**Auxiliary leaders with a dotted line into the quorum — raised 2026-08-13.** Ward callings such as **Ward Mission Leader** and **Temple and Family History Leader** do not report to the elders quorum presidency, but a specific EQ seat carries ultimate responsibility for that effort. Two distinct relationships exist and the model currently expresses only one:
+
+- **Operational ownership** — the auxiliary leader runs the work.
+- **Accountability** — an EQ seat answers for whether it happens.
+
+These people need a small, focused surface where assignments reach the right individuals, not access to quorum operations at large.
+
+**This is the area-scoped seat mechanism already in the schema**, which was built early on 2026-08-11 precisely for "ward callings outside the quorum will need access to parts of wardOS" (the worked example then was a Sunday program coordinator). What is missing is not the mechanism but its vocabulary: `areas` enumerates the app's current modules, and neither missionary work nor temple and family history is one. An accountability link from an area to a responsible seat does not exist either.
+
 **Future — the bishopric, as an oversight user.** Raised by the owner 2026-08-13 after a stake presidency meeting attended with his ward EQ presidency. If several organisations use wardOS, the bishopric's need is not to run any of them but to see that **work agreed in ward council actually lands somewhere and is not lost when it moves.** That is a genuinely different job from the presidency's, and it is the strongest argument yet for a ward scope above organisation scope.
 
 **Positioning stays EQ-first — decided 2026-08-13.** Ward council capability is a v2/v3 expansion, not a repositioning. The success criterion is unchanged: one presidency uses this for one full Sunday cycle and prefers it to the spreadsheet. Chasing the bishopric first would mean a bigger product, a top-down adoption path, and a much longer road to anyone using it at all.
@@ -48,6 +57,33 @@ Success is defined narrowly and behaviorally: the presidency uses it for one ful
 wardOS is calling-specific. A general project manager or shared spreadsheet can hold the same rows, but it cannot encode the thing that makes this domain hard — **the boundary between operational coordination and confidential pastoral care.**
 
 That boundary is the product. Lessons, cleaning rotations, service logistics, and agenda items belong here. Worthiness concerns, financial need, counseling notes, and private family circumstances never do. wardOS is the tool that knows the difference and enforces it in its data model, its import rules, and its public surfaces.
+
+## Intended Outcomes
+
+Stated by the owner 2026-08-13. Both are acceptable; neither is committed.
+
+1. **Give it to the Church** as a solid option wards can run.
+2. **Make money from it** as a niche productivity tool.
+
+**The sequence is fixed regardless:** beta with the owner's own presidency, then a second presidency, then the bishopric — with a testing plan covering distinct user types and use cases. Neither outcome is reachable without that evidence.
+
+### The unresolved problem in outcome 2: who pays
+
+Recorded now because it is cheaper to face early than after a billing system exists.
+
+**Ward budget almost certainly cannot buy this.** Church funds are administered through official channels with strict usage rules; a third-party software subscription is not a normal or likely permitted expense. That removes the obvious buyer.
+
+What remains is uncomfortable:
+
+- **Individual leaders paying out of pocket** — for a calling they did not choose and will be released from, often within a few years. Willingness to pay is structurally low.
+- **Stake or multi-ward purchase** — same budget constraint, one level up.
+- **Free tool, revenue elsewhere** — no obvious elsewhere in this niche.
+
+**Outcome 1 has its own difficulty:** the Church builds its systems in house and has not historically adopted third-party tools into official use. Donating a codebase is unlikely to be accepted in that form. The realistic version is that wardOS stays independent and free, and its success is measured in wards helped rather than revenue.
+
+None of this argues against building it. It argues against assuming a business model exists before testing whether anyone will pay, and against letting monetisation shape the product before a single presidency has used it for one Sunday.
+
+**Marketing is constrained by rule 4.** wardOS may describe who it is for; it may never imply affiliation or endorsement. That rules out a whole register of go-to-market language.
 
 ## Operating Context
 
