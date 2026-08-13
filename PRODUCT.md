@@ -47,7 +47,9 @@ Neither breakpoint is the "real" design and the other an adaptation. The Sunday-
 
 ## Capabilities and Constraints
 
-**Committed infrastructure:** Supabase Postgres for persistence, Clerk for authentication (Google sign-in), Vercel for deployment.
+**Committed infrastructure:** Supabase Postgres for persistence, Supabase Auth for authentication (magic-link sign-in), Vercel for deployment.
+
+*Amended 2026-08-13.* Clerk was the committed choice on 2026-08-11 and was reversed before any Clerk code existed. Clerk's real strengths are user management and organisations; wardOS needs neither, because seats and memberships are deliberately ward data. Meanwhile the Clerk-to-Supabase row-level-security integration was the fiddliest task in the plan, and Supabase Auth deletes it rather than solving it — `auth.uid()` is native there. Full reasoning: [`docs/plans/2026-08-12-authentication-design.md`](docs/plans/2026-08-12-authentication-design.md).
 
 **Tenancy — decided:** multi-tenant data model, single ward in production. Workspaces and workspace membership are built into the schema and the auth model from the start; only one workspace exists while the presidency tests it. Adding a second presidency later must be configuration, not a rewrite. The existing migration already carries `workspaces` and `workspace_members`.
 
@@ -81,6 +83,7 @@ The name **wardOS** is fixed.
 - **Typeface: DM Sans.** Owner-specified.
 - **White background, black type.** The content field is white; type is a near-black neutral.
 - **One accent: cobalt blue** (`#1D4ED8`). Status colors — red for needs-attention, green for complete, amber for in-progress — are functional and sit outside the accent.
+  - *Refined 2026-08-13, at the owner's direction.* Cobalt no longer fills buttons. Buttons are near-black pills, matching the public bulletin. Cobalt keeps a single job — **wayfinding**: active navigation, today's date, links, and focus rings. It had been doing four jobs at once, which is why it read as everywhere and meant nothing in particular. The accent is unchanged; only its scope is. See [`DESIGN.md`](DESIGN.md).
 - **Craft reference: Notion.** Calm, spacious, document-like. Low chrome, hierarchy carried by type and spacing rather than by boxes and color, generous whitespace, restrained use of saturation.
 
 Future visual work extends this system. It does not replace it without the owner reopening the decision.

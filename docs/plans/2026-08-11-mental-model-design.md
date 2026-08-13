@@ -141,7 +141,17 @@ The dashboard stays a list. Reading is not deciding, and a board on a phone in a
 
 ## Identity and permissions
 
-**Clerk owns one thing: who you are.** It does not own callings — those change constantly, they are ward data, and the same person holds different seats in different wards. Putting roles in Clerk means editing the auth provider every time someone is released.
+**The auth provider owns one thing: who you are.** It does not own callings — those change constantly, they are ward data, and the same person holds different seats in different wards. Putting roles in the auth provider means editing it every time someone is released.
+
+> **Amended 2026-08-12: the provider is Supabase Auth, not Clerk.** The principle
+> above is unchanged and was the reason the swap cost nothing — no roles had been
+> put anywhere. Clerk's strengths are user management and organisations, both of
+> which this model deliberately keeps as ward data, while the Clerk-to-Supabase
+> RLS integration was the most expensive part of the plan. Sign-in is by magic
+> link, and a session resolves to a person by **email**, with no stored auth id.
+> See [`2026-08-12-authentication-design.md`](2026-08-12-authentication-design.md).
+> Clerk is named throughout the rest of this document; read it as "the auth
+> provider".
 
 ```
 Person ──▶ Membership ──▶ Workspace
