@@ -16,6 +16,25 @@ The high councilor is a **stake officer assigned to the quorum, not a member of 
 
 **Future — other ward presidencies.** The product owner intends to test with his own presidency first, then pitch to other presidencies in the same ward (Relief Society, Young Men, Young Women, Primary, bishopric). This is a confirmed intent, not a shipped capability.
 
+**Future — the bishopric, as an oversight user.** Raised by the owner 2026-08-13 after a stake presidency meeting attended with his ward EQ presidency. If several organisations use wardOS, the bishopric's need is not to run any of them but to see that **work agreed in ward council actually lands somewhere and is not lost when it moves.** That is a genuinely different job from the presidency's, and it is the strongest argument yet for a ward scope above organisation scope.
+
+**Positioning stays EQ-first — decided 2026-08-13.** Ward council capability is a v2/v3 expansion, not a repositioning. The success criterion is unchanged: one presidency uses this for one full Sunday cycle and prefers it to the spreadsheet. Chasing the bishopric first would mean a bigger product, a top-down adoption path, and a much longer road to anyone using it at all.
+
+### Work that crosses organisations — confirmed need, not yet built
+
+Observed in real ward council practice and recorded 2026-08-13:
+
+1. **Shared origin.** A ward council topic produces action items for two organisations at once — Primary and Elders Quorum, or Elders Quorum and Relief Society.
+2. **Reassignment.** Something first given to Young Men turns out to belong to Elders Quorum, and has to move without vanishing.
+3. **Oversight.** The bishopric needs to follow items across those moves and see what is being avoided.
+
+Two product positions follow, both taken 2026-08-13:
+
+- **Shared work is two commitments with a shared origin, not one commitment with two owners.** Co-ownership is a reliable way for work to disappear: if two organisations own an item, neither does. Distinct owners linked to the ward council item that spawned them keep accountability sharp while preserving the thread.
+- **A transfer must leave a trace.** "This item has moved between three organisations" is exactly the signal a bishopric wants, because work that keeps moving is work nobody has accepted. That is the same reasoning that made carry-over count derived rather than stored.
+
+**Pastoral risk rises here, and must be designed for rather than assumed.** An EQ presidency meeting is mostly logistics. Ward council is not — it discusses families, individuals and circumstances. The operational/pastoral boundary currently holds easily because the content is lessons and cleaning rotations. Ward council support raises the odds of someone typing something that must never be stored, so it needs visible guardrails at the point of entry, not a principle in a document. See rule 1 in `CLAUDE.md`.
+
 ## Product Purpose
 
 wardOS replaces a scattered set of Google Sheets tabs, Docs, calendars, emails, and text threads with one operating dashboard for presidency work.

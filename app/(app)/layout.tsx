@@ -42,7 +42,8 @@ export default async function InternalLayout({
       identity={{
         personName: session.person.name,
         seatTitle: session.seat.title,
-        workspaceName: session.workspace.name,
+        wardName: session.workspace.name,
+        organizationName: session.workspace.organization,
         workspaceSlug: session.workspace.slug,
       }}
     >

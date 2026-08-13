@@ -26,9 +26,13 @@
 -- Workspace
 -- ---------------------------------------------------------------------------
 
-insert into workspaces (id, name, slug) values
-  ('a0000000-0000-4000-8000-000000000001', 'Oak Hills Ward', 'oak-hills')
-on conflict (id) do update set name = excluded.name, slug = excluded.slug;
+-- `name` is the WARD. `organization` is which of its organisations this
+-- workspace belongs to. They were one field until 2026-08-13; separating them is
+-- the first step toward commitments that can move between organisations.
+insert into workspaces (id, name, slug, organization) values
+  ('a0000000-0000-4000-8000-000000000001', 'Oak Hills Ward', 'oak-hills', 'Elders Quorum')
+on conflict (id) do update set
+  name = excluded.name, slug = excluded.slug, organization = excluded.organization;
 
 -- ---------------------------------------------------------------------------
 -- Seats

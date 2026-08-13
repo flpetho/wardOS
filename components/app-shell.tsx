@@ -58,7 +58,10 @@ const icons: Record<IconKey, React.ComponentType<{ className?: string }>> = {
 export type AppShellIdentity = {
   personName: string;
   seatTitle: string;
-  workspaceName: string;
+  /** The ward. Context, not identity — set quiet. */
+  wardName: string;
+  /** The organisation whose workspace this is. This is who you are here. */
+  organizationName: string | null;
   workspaceSlug: string;
 };
 
@@ -200,6 +203,14 @@ function SidebarBody({
 }) {
   return (
     <>
+      {/*
+        Three lines, ranked by what the reader needs.
+
+        The ORGANISATION is who you are in here and leads. The WARD is context,
+        so it drops to 11.5px and muted. wardOS itself is the smallest of the
+        three: you already know which app you opened, and the product name is
+        the least useful fact on the screen once a second organisation exists.
+      */}
       <Link
         href="/dashboard"
         className="flex items-center gap-2.5 px-4 py-4 transition-opacity hover:opacity-80"
@@ -208,12 +219,17 @@ function SidebarBody({
           <ClipboardList data-icon="" />
         </span>
         <span className="min-w-0">
-          <span className="block truncate text-[15px] font-semibold leading-tight tracking-[-0.01em]">
+          <span className="block truncate text-[11px] font-semibold uppercase leading-tight tracking-[0.06em] text-subtle-foreground">
             wardOS
           </span>
-          <span className="block truncate text-[12px] leading-tight text-muted-foreground">
-            {identity.workspaceName}
+          <span className="block truncate text-[15px] font-semibold leading-tight tracking-[-0.01em]">
+            {identity.organizationName ?? identity.wardName}
           </span>
+          {identity.organizationName ? (
+            <span className="block truncate text-[11.5px] leading-tight text-muted-foreground">
+              {identity.wardName}
+            </span>
+          ) : null}
         </span>
       </Link>
 

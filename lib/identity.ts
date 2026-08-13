@@ -19,7 +19,13 @@ import type { Area, Person, Seat, SeatKey, SeatType, SeatWithHolder } from "@/li
   request.
 */
 
-export type Workspace = { id: string; name: string; slug: string };
+/** `name` is the ward; `organization` is which organisation within it. */
+export type Workspace = {
+  id: string;
+  name: string;
+  slug: string;
+  organization: string | null;
+};
 
 export type ActiveSession = {
   person: Person;
@@ -110,7 +116,7 @@ export const getActiveSession = cache(async (): Promise<ActiveSession | null> =>
       `id,
        person:people ( id, name, email ),
        seat:seats ( ${SEAT_COLUMNS} ),
-       workspace:workspaces ( id, name, slug )`,
+       workspace:workspaces ( id, name, slug, organization )`,
     )
     .eq("person_id", personId)
     .is("active_until", null)
