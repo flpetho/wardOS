@@ -2,21 +2,56 @@
 
 Where wardOS actually stands. Read this first, every session.
 
-**Last updated:** 2026-08-13
+**Last updated:** 2026-08-14
 
 ---
 
 ## Resume here
 
-**All work lives on the branch `design-system-and-core-model`, pushed to `origin` on 2026-08-13 but not merged.** `main` still holds the original pre-redesign prototype. Merging is a decision the owner has not made yet; do not merge without asking.
+**`main` is current and deployed.** The branch `design-system-and-core-model` was fast-forwarded into `main` on 2026-08-13 (18 commits, linear history, no merge commit) and pushed. The two refs are identical. **Start new work from `main`** — that branch name stopped describing its contents several features ago.
 
-**Authentication is done.** Supabase Auth with magic-link sign-in gates every internal route; identity is persisted in Postgres. **The next task is step 3, emphasis on the shared dashboard** — the signed-in seat's work loud, the rest of the presidency's quiet.
+**wardOS is live.** Authentication works end to end against a real Supabase project, and a real Vercel production deployment serves it.
+
+| | |
+|---|---|
+| **Live app** | https://ward-os-eight.vercel.app |
+| **Public bulletin** | https://ward-os-eight.vercel.app/p/oak-hills/program |
+| **Supabase project** | `pjtagvpucrpybffpjkal`, West US (Oregon) |
+| **Vercel project** | `ward-os` / `prj_RMElNvk0284dMMPvKkaovI4OTDp3` |
+| **Vercel team** | `team_4RPD9yCS6m1a72dJBeOYfTDj` |
+| **Domain owned, NOT attached** | `ward-os.com` |
+
+Verified in production 2026-08-14: bulletin 200 with real content, `/dashboard` and `/budget` 307 to `/sign-in`, unknown ward slug 404.
+
+**The next build task is step 3, emphasis on the shared dashboard** — the signed-in seat's work loud, the rest of the presidency's quiet. But see "Do these first" below; several loose ends are cheap now and annoying later.
 
 **Before touching anything, read [`docs/plans/2026-08-11-mental-model-design.md`](docs/plans/2026-08-11-mental-model-design.md).** The core model is not derivable from the code alone, and getting it wrong will produce work that has to be thrown away. For anything touching auth, also read [`docs/plans/2026-08-12-authentication-design.md`](docs/plans/2026-08-12-authentication-design.md). For anything visual, [`DESIGN.md`](DESIGN.md).
 
-**Deployment: half-configured, and currently wrong.** Defect 1 is closed *on this branch*. The owner connected `flpetho/wardOS` to Vercel on 2026-08-13, but **this branch has never been pushed**, so Vercel is building `main` — the pre-redesign prototype whose `proxy.ts` returns `NextResponse.next()` on both paths. An unauthenticated dashboard is therefore live on a public URL. The data is fictional, so nothing sensitive leaked, but this must not stay true.
+### Do these first
 
-Before production works at all: push this branch, point Vercel's production branch at it (or merge), set `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` / `NEXT_PUBLIC_WARD_SLUG` in Vercel, and add the deployed origin to Supabase's Site URL and redirect allow list. **Without the env vars every request 500s** — `proxy.ts` calls `supabaseEnv()`, which throws when they are missing. Without the redirect URL, production magic links bounce to localhost.
+Ordered by how cheap they are now versus later. None is large.
+
+1. **Attach `ward-os.com` in Vercel** (Settings → Domains), add the DNS records at the registrar, then update **Supabase → Authentication → URL Configuration**: Site URL `https://ward-os.com`, and add `https://ward-os.com/**` to Redirect URLs **while keeping `http://localhost:3000/**`**. Miss the redirect entry and production magic links bounce people to localhost — which looks like a broken app to everyone but the developer.
+
+2. **Custom SMTP, via Resend.** Supabase locks the email-template editor unless custom SMTP is configured, so the branded sign-in email in `supabase/templates/` cannot be applied without it. It also lifts the built-in mailer's dev-only rate limit, which has been throttling multi-seat testing all along. Setup: Resend account → verify `ward-os.com` → DNS records → API key → Supabase SMTP settings (host `smtp.resend.com`, port 465, username literally `resend`, password = the API key, sender `signin@ward-os.com`). Full instructions in `supabase/templates/README.md`.
+
+3. **Paste the email template into BOTH "Magic Link" and "Confirm signup".** A person's first sign-in triggers Confirm signup, so customising only Magic Link leaves the stock Supabase email as the first thing anyone ever sees.
+
+4. **Verify the budget exclusion as David** — see Known defects, item 19. This is the one thing claimed but never observed.
+
+### Environment variables
+
+Set in Vercel for Production, Preview and Development; identical to `.env.local`:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://pjtagvpucrpybffpjkal.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon key>
+NEXT_PUBLIC_WARD_SLUG=oak-hills
+```
+
+**These are required at BUILD time, not just runtime.** `supabaseEnv()` throws before `cookies()` is reached, so Next never learns the page is dynamic and treats it as a prerender failure — the build aborts on `/budget`. That is the correct behaviour (it refuses to ship an app with no auth) but the error message points at `.env.local`, which is misleading on Vercel.
+
+There is deliberately **no `SUPABASE_SERVICE_ROLE_KEY`** anywhere. Vercel will warn that a `NEXT_PUBLIC_*` variable containing "KEY" may be unsafe; for the anon key that warning is a name-pattern heuristic and "Mark as Safe" is correct — RLS is what protects the data, and it was verified returning `[]` from seven internal tables. Leave "Sensitive" **off**: every `NEXT_PUBLIC_` value is inlined into the client bundle anyway, so marking it sensitive only hides it from you.
 
 ### Running and verifying
 
@@ -31,6 +66,8 @@ pnpm build      # must pass before any commit
 **You must be signed in to see anything.** `/` redirects to `/sign-in`; enter an address that has a `people` row and a current membership (see the table under Landed). The magic link arrives by email — Supabase's built-in mailer is rate-limited, so signing in as several seats in quick succession will hit the ceiling.
 
 Key routes: `/dashboard`, `/meetings` (shows the model most clearly), `/leadership/hc` (the scoped liaison seat), `/budget` (404s for the high councilor — the one area exclusion), `/p/oak-hills/program` (the public bulletin, no sign-in needed — view at phone width).
+
+**Background dev servers get reaped in this environment.** Three times on 2026-08-13 the server stopped with no error and a clean cursor-restore escape (`ESC[?25h`). It is not a crash and not caused by concurrent builds — a build finished two minutes before one of the stops and the server kept serving. Just restart it.
 
 ### Use the right pnpm
 
@@ -54,7 +91,7 @@ Key routes: `/dashboard`, `/meetings` (shows the model most clearly), `/leadersh
 
 ## Phase
 
-**Prototype → first real deployment.** The app is a clickable prototype that now has real authentication but still no domain persistence. The goal is a version the owner's Elders Quorum presidency can use for one full Sunday cycle.
+**Deployed prototype → usable tool.** First real deployment happened 2026-08-13. The app has real authentication and a live production URL, but still no domain persistence. The goal is unchanged: a version the owner's Elders Quorum presidency can use for one full Sunday cycle.
 
 Working today: 18 routes, `pnpm build` and `pnpm typecheck` pass clean, sign-in works end to end against a live Supabase project, every internal route is gated, and identity — workspaces, people, seats, memberships — is persisted with row level security enforcing it.
 
@@ -63,6 +100,16 @@ Not working today: **no domain data persists.** Lessons, service, cleaning, comm
 The honest summary: **wardOS now knows who you are and what you may see, but still cannot remember anything you tell it.**
 
 ---
+
+## Landed 2026-08-13 → 2026-08-14
+
+- **First real deployment.** `main` fast-forwarded to the 18-commit branch and pushed; Vercel builds `main` as production. The first build **failed** — missing env vars aborted the prerender of `/budget` — which was the correct failure rather than shipping without auth. After the three variables were added it built clean and production verified green.
+
+- **Vercel MCP server added at user scope** (`https://mcp.vercel.com`), matching the Figma precedent — project scope would write a `.mcp.json` into the repo and hand the config to anyone cloning it. It exposes projects, deployments, build logs, runtime errors, deployment protection, domain purchase and docs search. **It cannot write environment variables or attach domains**, so those stay dashboard work. It paid for itself immediately by returning the failing build's stack trace directly.
+
+- **`ward-os.com` purchased**, not yet attached. `wardos.com` is held by a reseller at ~$1,500. `wardos.app` taken. `wardos.org` ruled out on rule 4 grounds. `.dev` rejected — non-technical readers parse "dev" as "unfinished", which is corrosive for a tool whose trust model is an emailed sign-in link. `.us` rejected — the usTLD policy forbids WHOIS privacy, so the registrant's home address would be public, and it signals US-only for a global church.
+
+- **Budget exclusion fixed on the dashboard.** The high councilor could still read the quorum budget: the nav item was hidden and `/budget` 404'd, but the dashboard panel printed the remaining balance in full. The two surfaces that were tested passed while the actual leak sat on the most-visited page. The core model says "nav item **and** dashboard panel both"; only one had been built. The gap list is now area-filtered too — it leaks nothing today because `computeGaps()` produces no budget gaps, but it is the identical defect one step away.
 
 ## Landed 2026-08-12 → 2026-08-13
 
@@ -167,7 +214,7 @@ Ordered by the core model agreed 2026-08-11. Read [`docs/plans/2026-08-11-mental
 3. **Emphasis on the shared dashboard.** Everyone sees everything; the signed-in seat's work renders loud and the rest quiet. No access control inside a workspace.
 4. **Meeting Mode.** The highest-value flow in the PRD (§12 Flow 3) and still entirely unbuilt. Self-building agenda, four-column board, decisions recorded.
 5. **Roll the design system across the remaining twelve pages.** They inherited tokens and primitives but keep their original layouts; dates are still raw ISO outside the dashboard.
-6. **Persistence (Supabase) and deploy (Vercel).** Not before auth exists.
+6. **Persistence (Supabase).** ~~and deploy (Vercel)~~ — **deploy done 2026-08-13.** Persistence is now the single biggest gap: identity is in Postgres, every domain record is still a seed array, so nothing a user types survives a refresh. **When implementing commitments, do not give them a plain `seat_id` column** — see the 2026-08-13 decision on dated assignment.
 7. **Reconcile the real Google Sheet.** Deferred by the owner 2026-08-11. Accepted risk: rework when real columns arrive.
 
 Auth was deliberately step 2, not step 1 — the schema had to know what a Membership is before identity had anything to attach to. That sequencing paid off: identity attached to real tables on the first attempt.
@@ -178,6 +225,10 @@ Auth was deliberately step 2, not step 1 — the schema had to know what a Membe
 
 | Date | Decision |
 |---|---|
+| 2026-08-13 | **`main` is the truth again.** The feature branch was fast-forwarded in rather than run as production off a branch, because every tool assumes `main` and a branch named `design-system-and-core-model` had long stopped describing its contents. Linear history, no merge commit. |
+| 2026-08-13 | **`ward-os.com` purchased.** Hyphen accepted: distribution is QR codes and emailed links, not people typing a URL from memory, so the hyphen costs less than `.org`'s false institutional signal or `.dev`'s "unfinished" read. |
+| 2026-08-13 | **Fictional seed data may be publicly reachable.** The bulletin at `/p/oak-hills/program` serves invented content on a public URL. Accepted: nothing internal is exposed now that auth works, the names are invented, and the page is deliberately public. Revisit before real ward data enters. |
+| 2026-08-13 | **Vercel MCP at user scope**, not project scope — same reasoning as Figma on 2026-08-12. |
 | 2026-08-13 | **No `.org` domain, ever.** In the LDS world `.org` is what official Church properties use (`churchofjesuschrist.org`), so `wardos.org` invites exactly the inference rule 4 forbids. Ruled out by the owner outright. `wardos.com` is held by a reseller at ~$1,500 and is not being bought. `wardos.app` is taken. `ward-os.com` is the leading candidate, undecided. |
 | 2026-08-13 | **Custom SMTP is a hard prerequisite, not polish.** Supabase locks the email-template editor unless custom SMTP is configured — their shared mailer would otherwise be a phishing relay. So a designed sign-in email and Supabase's own sender are mutually exclusive. This also fixes the dev-only rate limit that has been throttling multi-seat testing. Send from a subdomain (`send.<domain>`) so a damaged sending reputation never touches the apex. |
 | 2026-08-13 | **Two acceptable outcomes, neither committed:** give wardOS to the Church, or make money from it. Recorded in `PRODUCT.md` along with the unresolved problem in the second — ward budget almost certainly cannot buy third-party software, which removes the obvious payer. Not a reason to stop; a reason not to let monetisation shape the product before one presidency has used it for a Sunday. |
@@ -217,9 +268,9 @@ Auth was deliberately step 2, not step 1 — the schema had to know what a Membe
 
 ## Known defects
 
-Found in the 2026-08-11 review. All verified by running the app, not inferred. None are fixed yet.
+Originally from the 2026-08-11 review, added to since. All verified by running the app, not inferred. Struck items are fixed; the rest are live.
 
-### Blocking deployment
+### Blocking a real presidency using it
 
 1. ~~**No authentication whatsoever.**~~ **Fixed 2026-08-13.** Supabase Auth gates every internal route; verified that 7 internal paths redirect to `/sign-in` and that the anon key reads nothing from 7 internal tables.
 2. ~~**Public program page ignores ward slug and publish status.**~~ **Fixed 2026-08-12.** A mismatched slug now returns 404 (verified: `/p/not-a-real-ward/program` → 404, `/p/oak-hills/program` → 200), and an unpublished program renders a "not published yet" notice instead of the content. Satisfies `prd` §14.7.
@@ -245,6 +296,14 @@ Found in the 2026-08-11 review. All verified by running the app, not inferred. N
 16. ~~**`createServiceSupabaseClient` bypasses RLS.**~~ **Fixed 2026-08-13.** `lib/supabase.ts` deleted; the key is absent from `.env.example` and `.env.local`, with a comment saying why. Replaced by `lib/supabase/{env,server,client,middleware}.ts`, all of which carry the caller's session.
 17. **No tests and no test framework.**
 18. **`prd` has no file extension.** It is markdown; `prd.md` would render on GitHub.
+
+### Added 2026-08-13
+
+19. **The budget exclusion has never been observed in a browser.** Fixed in code 2026-08-13 and proven at two layers — RLS impersonation shows the high councilor's seat carries 7 areas without `budget`, and `/budget` calls `notFound()` for an out-of-scope seat — but nobody has signed in as `flpetho+david@gmail.com` and *looked*. Three things to check: the sidebar footer names David Placeholder / Stake High Councilor, "Budget" is absent from Work Areas, and the dashboard's Service/Cleaning row has no Budget panel. If the footer says David but Budget still appears, there is a second bug in `lib/nav.ts` that has not been found.
+
+20. **`Badge` `default` and `info` are visually identical.** `--info` and `--primary` are both `#1d4ed8`. Now that badges carry state and cobalt means wayfinding, `default` should become `info` and the variant retire.
+
+21. **Only `/budget` and `/admin` guard on area scope.** Every other area page relies on the nav omitting it. Correct today because no current seat is excluded from those areas, and wrong the moment a scoped seat exists — which is exactly what the auxiliary-leader work in `PRODUCT.md` implies.
 
 ---
 

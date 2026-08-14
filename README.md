@@ -133,6 +133,33 @@ pnpm typecheck   # must pass before any commit
 
 ## Deployment
 
-Not yet deployed. Import `flpetho/wardOS` into Vercel and set the same two
-environment variables, plus a production `NEXT_PUBLIC_WARD_SLUG`. Update the
-Supabase Site URL and redirect allow list to the deployed origin.
+Live on Vercel, production branch `main`.
+
+| | |
+|---|---|
+| App | https://ward-os-eight.vercel.app |
+| Public bulletin | https://ward-os-eight.vercel.app/p/oak-hills/program |
+| Vercel project | `ward-os` |
+| Domain owned, not yet attached | `ward-os.com` |
+
+The same three environment variables must be set in Vercel for **Production,
+Preview and Development**.
+
+**They are required at build time, not just runtime.** `supabaseEnv()` throws
+before `cookies()` is reached, so Next never learns the page is dynamic and
+treats it as a prerender failure — the build aborts on `/budget` with an error
+that points at `.env.local`, which is misleading on Vercel. This is deliberate:
+the build refuses to ship an app that cannot authenticate.
+
+Vercel warns that a `NEXT_PUBLIC_*` variable containing "KEY" may be unsafe.
+For the anon key that is a name-pattern heuristic, not an evaluation — row level
+security is what protects the data, verified returning nothing from seven
+internal tables. Leave **Sensitive off**: every `NEXT_PUBLIC_` value is inlined
+into the client bundle regardless, so marking it sensitive only hides it from
+you.
+
+When attaching `ward-os.com`, update **Supabase → Authentication → URL
+Configuration** in the same sitting: Site URL to the new origin, and add
+`https://ward-os.com/**` to Redirect URLs **while keeping**
+`http://localhost:3000/**`. Otherwise production magic links redirect people to
+localhost.
