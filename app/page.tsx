@@ -108,9 +108,9 @@ export default async function HomePage({
             by bookmark. See STATE.md for the accepted cost and why
             app.ward-os.com is the right resolution rather than restoring a link.
           */}
-          <Link href="#demo">
+          <Link href="#shape">
             <Button size="sm" className="transition-transform active:translate-y-px">
-              Request a demo
+              Help shape it
             </Button>
           </Link>
         </nav>
@@ -133,12 +133,12 @@ export default async function HomePage({
                 what has to happen by Sunday, and who owns it.
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Link href="#demo" className="sm:w-auto">
+                <Link href="#shape" className="sm:w-auto">
                   <Button
                     size="lg"
                     className="w-full transition-transform active:translate-y-px sm:w-auto"
                   >
-                    Request a demo
+                    Help shape it
                     <ArrowRight data-icon="" aria-hidden />
                   </Button>
                 </Link>
@@ -416,17 +416,18 @@ export default async function HomePage({
             The form. Stacked heading over a full-width form rather than another
             split, so it does not repeat the hero's layout family.
         ------------------------------------------------------------------- */}
-        <section id="demo" className="scroll-mt-16 border-t border-border bg-surface">
+        <section id="shape" className="scroll-mt-16 border-t border-border bg-surface">
           <div className="mx-auto max-w-[1120px] px-5 py-20 sm:px-8 sm:py-28">
             <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-              Request a demo
+              Help shape it
             </p>
-            <h2 className="mt-4 max-w-[22ch] text-[30px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground sm:text-[38px]">
-              Have a look with your own presidency in mind.
+            <h2 className="mt-4 max-w-[24ch] text-[30px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground sm:text-[38px]">
+              Tell us how your presidency actually runs.
             </h2>
             <p className="mt-5 max-w-[58ch] text-[15px] leading-relaxed text-muted-foreground">
-              Tell us which seat you serve in and we will walk you through it.
-              There is nothing to install and no account to create first.
+              wardOS is early enough that a conversation still changes what gets
+              built. There is nothing to install, nothing to sign, and no demo to
+              sit through.
             </p>
 
             <div className="mt-10 max-w-[46rem] rounded-lg border border-border bg-card p-6 sm:p-8">

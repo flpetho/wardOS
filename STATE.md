@@ -264,7 +264,11 @@ Raised by the owner 2026-08-19, to be worked out **during** the beta with his ow
 1. **Accounts.** Today onboarding is two rows added by hand in the Supabase table editor, and there is no self-service anything. A second presidency makes that untenable. This is the largest of the four.
 2. **Pricing model.** Blocked on the unresolved question already in `PRODUCT.md`: ward budget almost certainly cannot buy third-party software, which removes the obvious payer. Decide nothing here until one presidency has used wardOS for a Sunday.
 3. **Screenshots for the landing page.** The page currently carries no product imagery at all, because the only owned photograph is the Gilbert Temple and putting a temple on a marketing page reads as institutional endorsement, which rule 4 forbids. The honest asset is a real screenshot of the dashboard, captioned as sample data.
-4. **Landing page copy, in detail.** The current copy is a first pass written in one sitting. Worth a proper pass once real usage produces real language.
+4. **Landing page copy, in detail.**
+
+5. **Resolve the Black Car tension on the landing page.** The playbook argues for one narrowly scoped promise; the page currently shows a five-cell module grid, which pulls the other way. The sharpest single claim wardOS has is the turnover argument, because it is the one thing a spreadsheet cannot do at all. Worth testing whether the grid dilutes it. Not obviously wrong today, so recorded rather than acted on.
+
+6. **Decide the page's voice: "we" or "I".** The copy says "us" and "we" throughout while also saying the tool was built by one person. That is a small dishonesty nobody would prosecute, but first person singular would be more disarming and more consistent with the rest of the page. Not changed unilaterally because it is the owner's voice. The current copy is a first pass written in one sitting. Worth a proper pass once real usage produces real language.
 
 ## Next up
 
@@ -286,6 +290,7 @@ Auth was deliberately step 2, not step 1 — the schema had to know what a Membe
 
 | Date | Decision |
 |---|---|
+| 2026-08-19 | **The CTA asks for a conversation, not a demo.** "Request a demo" promised something that does not exist: no domain data persists, so there is nothing to walk anyone through. Raised by the owner, who was right. It is now "Help shape it", and the form section asks how a presidency keeps track of things today rather than offering to show them anything. "Be a tester" was considered and rejected: it reads as unpaid QA, offers the person nothing, and still implies a working product. See `PRODUCT.md` for the playbook review that shaped this. |
 | 2026-08-19 | **The landing page speaks to any ward presidency, and explicitly not to a stake.** Owner-directed. Peer organisations (Relief Society, Young Men, Young Women, Primary, Sunday School) are named on the page because the core model already fits them unchanged. Stake is refused: a stake presidency coordinates wards rather than running one, nothing in the schema addresses it, and the only stake object that exists is the high councilor liaison seat. See `PRODUCT.md` for the peer-versus-oversight distinction, which is the part of the 2026-08-13 decision that keeps being misread. |
 | 2026-08-19 | **No sign-in link on any public page.** Owner-directed, and reaffirmed after the access cost was raised. A public sign-in invitation walks strangers into the no-access page, because `signInWithOtp` mints an auth user for any address. The presidency reaches `/sign-in` by bookmark. Accepted cost: the domain alone no longer gets a new device into the app, which is in tension with principle 4 and is best resolved by `app.ward-os.com` rather than by restoring the link. |
 | 2026-08-18 | **The landing page lives at `/` on the apex, and the app stays there too.** `app.ward-os.com` was raised by the owner and is **recommended but not built** — see the open question below. Building the landing page at `/` works either way: if the app later moves to a subdomain, the apex simply keeps the page and drops the signed-in redirect. |

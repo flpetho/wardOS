@@ -96,6 +96,25 @@ What remains is uncomfortable:
 
 None of this argues against building it. It argues against assuming a business model exists before testing whether anyone will pay, and against letting monetisation shape the product before a single presidency has used it for one Sunday.
 
+### Measured against a VC playbook, 2026-08-19
+
+The owner added `docs/The Founders Playbook.pdf` (Michia Rohrssen, L7V) and asked how it applies. Its thesis: find a **large, early, desperate** market, validate with 50 open-ended conversations, get commitment before building, then ship a narrowly scoped "Black Car Product".
+
+**wardOS fails its primary criterion, and that is worth knowing rather than arguing with.** The playbook requires a bottoms-up TAM above $1b. Generously: roughly 30,000 congregations worldwide times six organisations is about 180,000 presidencies; at $50 a year that is around $9m. Clearing $1b would need over $5,000 per presidency per year. *(Those inputs are estimates and want checking, but the conclusion survives any plausible correction: it is two orders of magnitude out.)* The "who pays" problem above makes the realistic price closer to zero still.
+
+It also fails **desperate** on the playbook's own test. Spreadsheets are a workaround most presidencies find good enough, and wardOS neither increases revenue nor cuts costs, which the playbook says will always beat a "nice to have".
+
+**The conclusion is not to abandon wardOS. It is that this playbook optimises for an outcome the owner has not committed to.** It is written by an investor looking for companies to invest in; outcome 1 above is "give it to the Church". Scoring wardOS against a venture rubric would recommend killing a thing worth building. **Take its tactics, reject its scoring.**
+
+**What is worth taking:**
+
+- **Sell the conversation, not the software** (its step 3). Directly produced the 2026-08-19 CTA change from "Request a demo" to "Help shape it".
+- **Open-ended discovery, never leading questions** (its step 2). "Would you use this?" teaches nothing; "how do you keep track of things now?" names the thing being replaced. The landing page's free-text field now asks the latter.
+- **Narrow scope** (its "Black Car Product"). Agrees with the 2026-08-11 core model: the spine is the commitment loop, work areas are sources of work rather than co-equal domains.
+- **Its warning about personal-problem origins**, which it ranks as the *least* recommended idea source: having the problem yourself does not mean solving it is a good business. wardOS is squarely a personal-problem product. Hold that consciously.
+
+**What is worth refusing:** the sales theatre. Letters of intent, "70% lifetime discount", and naming a group a Customer Advisory Board explicitly because it "sounds official" so people have "a higher perceived status of it". Aimed at unpaid volunteers in a church calling, that is manipulation, and it would be recognised as such. The structure of a small group with real influence is sound; the costume is not.
+
 **Marketing is constrained by rule 4.** wardOS may describe who it is for; it may never imply affiliation or endorsement. That rules out a whole register of go-to-market language.
 
 ## Operating Context

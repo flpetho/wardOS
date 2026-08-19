@@ -55,7 +55,7 @@ function SubmitButton() {
       disabled={pending}
       className="w-full transition-transform active:translate-y-px sm:w-auto"
     >
-      {pending ? "Sending your request" : "Request a demo"}
+      {pending ? "Sending" : "Help shape it"}
     </Button>
   );
 }
@@ -70,7 +70,7 @@ export function DemoRequestForm() {
       <div className="rounded-lg border border-border bg-surface p-6 sm:p-8">
         <p className="flex items-center gap-2 text-[15px] font-semibold text-ok">
           <Check data-icon="" aria-hidden />
-          Request received
+          Thank you
         </p>
         <p className="mt-2 max-w-[52ch] text-sm leading-relaxed text-muted-foreground">
           Thank you. You will get a reply from a person, not a system, and
@@ -132,7 +132,7 @@ export function DemoRequestForm() {
       </div>
 
       <Field
-        label="Anything you want us to know"
+        label="How does your presidency keep track of things now?"
         htmlFor="note"
         error={fields.note}
         hint="Optional, and operational only. Please do not describe any individual or family circumstance here."
