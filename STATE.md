@@ -2,7 +2,7 @@
 
 Where wardOS actually stands. Read this first, every session.
 
-**Last updated:** 2026-08-18
+**Last updated:** 2026-08-19
 
 ---
 
@@ -65,9 +65,9 @@ pnpm build      # must pass before any commit
 
 `pnpm lint` is broken and stays broken until defect 11 is fixed.
 
-**You must be signed in to see anything.** `/` redirects to `/sign-in`; enter an address that has a `people` row and a current membership (see the table under Landed). The magic link arrives by email — Supabase's built-in mailer is rate-limited, so signing in as several seats in quick succession will hit the ceiling.
+**You must be signed in to see anything**, and as of 2026-08-19 **nothing public links to `/sign-in` any more** — `/` is the landing page and carries no sign-in affordance at all, by the owner's direction. The route works; it is unadvertised, so reach it by typing or bookmarking `https://ward-os.com/sign-in`. Enter an address that has a `people` row and a current membership (see the table under Landed). The magic link arrives by email — Supabase's built-in mailer is rate-limited, so signing in as several seats in quick succession will hit the ceiling.
 
-Key routes: `/dashboard`, `/meetings` (shows the model most clearly), `/leadership/hc` (the scoped liaison seat), `/budget` (404s for the high councilor — the one area exclusion), `/p/oak-hills/program` (the public bulletin, no sign-in needed — view at phone width).
+Key routes: `/` (the public landing page), `/sign-in` (reachable only if you know it), `/dashboard`, `/meetings` (shows the model most clearly), `/leadership/hc` (the scoped liaison seat), `/budget` (404s for the high councilor — the one area exclusion), `/p/oak-hills/program` (the public bulletin, no sign-in needed — view at phone width).
 
 **Background dev servers get reaped in this environment.** Three times on 2026-08-13 the server stopped with no error and a clean cursor-restore escape (`ESC[?25h`). It is not a crash and not caused by concurrent builds — a build finished two minutes before one of the stops and the server kept serving. Just restart it.
 
@@ -110,6 +110,18 @@ Not working today: **no domain data persists.** Lessons, service, cleaning, comm
 The honest summary: **wardOS now knows who you are and what you may see, but still cannot remember anything you tell it.**
 
 ---
+
+## Landed 2026-08-19
+
+- **The landing page carries no sign-in link, anywhere.** Owner-directed, in two steps: the nav link went first, then the footer link.
+
+  **The reasoning for the nav is that we were walking strangers into a wall.** `signInWithOtp` creates an auth user for any address it is given, so a visitor who accepted the invitation got a real email, a real session, and then `NoAccess`. Nothing leaked — `no-access.tsx` deliberately says nothing about who does have access — but the journey was one we caused, and it competed with the only action the page exists for.
+
+  **The footer link was removed after the tradeoff was raised and the owner reaffirmed.** The cost is recorded rather than argued: nothing public now points at `/sign-in`, so a presidency member setting up a new phone needs the URL from somewhere other than the domain they were handed. That sits against `PRODUCT.md` principle 4, survivable by the next volunteer.
+
+  **This is now the strongest argument for `app.ward-os.com`** (open question 6). A separate host gives the presidency something to bookmark and leaves the marketing page with nothing to hide, which dissolves the tradeoff instead of accepting it.
+
+  **A second consequence, worth planning for and not urgent.** `/sign-in` is publicly reachable and unauthenticated, and its only current protection against being used to send mail to arbitrary addresses is that Supabase's built-in mailer is rate-limited. **Custom SMTP lifts that ceiling.** So the Resend work in "Do these first" quietly converts `/sign-in` into a small abuse surface that does not exist today. A session still grants nothing without a membership, so this is nuisance mail rather than exposure.
 
 ## Landed 2026-08-18
 
@@ -261,6 +273,7 @@ Auth was deliberately step 2, not step 1 — the schema had to know what a Membe
 
 | Date | Decision |
 |---|---|
+| 2026-08-19 | **No sign-in link on any public page.** Owner-directed, and reaffirmed after the access cost was raised. A public sign-in invitation walks strangers into the no-access page, because `signInWithOtp` mints an auth user for any address. The presidency reaches `/sign-in` by bookmark. Accepted cost: the domain alone no longer gets a new device into the app, which is in tension with principle 4 and is best resolved by `app.ward-os.com` rather than by restoring the link. |
 | 2026-08-18 | **The landing page lives at `/` on the apex, and the app stays there too.** `app.ward-os.com` was raised by the owner and is **recommended but not built** — see the open question below. Building the landing page at `/` works either way: if the app later moves to a subdomain, the apex simply keeps the page and drops the signed-in redirect. |
 | 2026-08-18 | **Introduce is a third register, not a restyling of Operate.** It shares tokens, type and pill buttons so the surfaces read as one product, but a marketing page is read by a stranger scrolling, not a member glancing. Recorded because "make the landing page look like the dashboard" and "give the landing page its own look" are both wrong. |
 | 2026-08-18 | **The absence of social proof is stated, not hidden.** Rules 4 and 5 forbid testimonials, adoption numbers and any endorsement, which removes every standard trust lever on a landing page. Rather than leave a gap a reader would notice, the page says plainly that wardOS is independent and not in use anywhere yet. Honesty is the only credibility available at this stage, and it is more convincing than a vague claim. |

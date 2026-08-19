@@ -413,19 +413,26 @@ export default async function HomePage({
         </section>
       </main>
 
+      {/*
+        Owner-directed 2026-08-19: no sign-in link anywhere on this page.
+
+        Nothing public now points at /sign-in. The route is still live and still
+        works; it is simply unadvertised, so the presidency reaches it from a
+        bookmark rather than from here. The cost is real and accepted: someone
+        setting up a new phone needs the URL from somewhere other than the
+        domain they were given.
+
+        This is the strongest argument yet for moving the app to
+        app.ward-os.com, which would give the presidency a host to bookmark and
+        leave this page with nothing to hide. See STATE.md, open question 6.
+      */}
       <footer className="border-t border-border">
-        <div className="mx-auto flex max-w-[1120px] flex-col gap-4 px-5 py-10 sm:flex-row sm:items-start sm:justify-between sm:px-8">
+        <div className="mx-auto max-w-[1120px] px-5 py-10 sm:px-8">
           <p className="max-w-[62ch] text-[12px] leading-relaxed text-muted-foreground">
             <span className="font-medium text-foreground">wardOS</span> is an
             independent tool and is not affiliated with, endorsed by, or
             sponsored by The Church of Jesus Christ of Latter-day Saints.
           </p>
-          <Link
-            href="/sign-in"
-            className="text-[12px] font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          >
-            Sign in
-          </Link>
         </div>
       </footer>
     </div>
