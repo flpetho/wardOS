@@ -383,13 +383,29 @@ export default async function HomePage({
 
               <div>
                 <h3 className="text-[15px] font-semibold text-foreground">
-                  It is not in use anywhere yet.
+                  It is in beta, with one presidency.
                 </h3>
+                {/*
+                  This paragraph is load-bearing and easy to ruin.
+
+                  It replaced "It is not in use anywhere yet", which was honest
+                  but ended on absence. The fix was to keep the candour and add
+                  motion, not to trade it for the standard pre-launch register:
+                  the section is credible precisely because it says the thing
+                  every other landing page hides, and "we're in beta!" on its own
+                  would make it indistinguishable from all of them.
+
+                  Watch the claim carefully as the beta progresses. "In beta with
+                  one presidency" is true today because that presidency has
+                  access and is giving feedback. It is NOT yet true that anyone
+                  runs a Sunday on wardOS, because no domain data persists. Do
+                  not upgrade this to "used every week" until it is.
+                */}
                 <p className="mt-3 max-w-[46ch] text-sm leading-relaxed text-muted-foreground">
-                  There are no customers to point at and no numbers to quote. The
-                  first real test is one presidency, for one full Sunday cycle.
-                  If that is earlier than you want to be involved, it honestly
-                  is.
+                  That presidency is the author&apos;s own. There is nobody else
+                  yet and no numbers to quote, which means an early conversation
+                  actually shapes what gets built. If that is earlier than you
+                  want to be involved, it honestly is.
                 </p>
               </div>
             </div>
