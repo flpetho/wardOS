@@ -31,15 +31,13 @@ Verified on `ward-os.com` 2026-08-18: `www` 308s to the apex, `/` 307s to `/sign
 
 Ordered by how cheap they are now versus later. None is large.
 
-1. **Apply migration `202608180001_demo_requests.sql` to the live Supabase project.** The landing page's demo form writes to a table that does not exist in production yet, so **every submission fails until this is applied.** The form degrades to a visible error pointing at an email address rather than looking successful, but a landing page whose only conversion action is broken is worse than no landing page. The migration was verified against a throwaway Postgres 16: all three migrations apply clean in order, and ten assertions pass including anon insert accepted, anon select/update/delete denied, and the note length boundary correct at exactly 600 characters.
+1. **Update Supabase → Authentication → URL Configuration.** The domain is attached and verified, but this half was not confirmed in the same sitting. Site URL `https://ward-os.com`; Redirect URLs must include `https://ward-os.com/**`, `https://www.ward-os.com/**`, `https://ward-os-eight.vercel.app/**` and **`http://localhost:3000/**`**. Supabase does not error on an unlisted redirect — it silently sends the person to the Site URL instead, so a wrong entry reads as a dead magic link rather than a misconfiguration. **Until someone signs in at `https://ward-os.com` and lands back there, treat production sign-in as unproven.**
 
-2. **Update Supabase → Authentication → URL Configuration.** The domain is attached and verified, but this half was not confirmed in the same sitting. Site URL `https://ward-os.com`; Redirect URLs must include `https://ward-os.com/**`, `https://www.ward-os.com/**`, `https://ward-os-eight.vercel.app/**` and **`http://localhost:3000/**`**. Supabase does not error on an unlisted redirect — it silently sends the person to the Site URL instead, so a wrong entry reads as a dead magic link rather than a misconfiguration. **Until someone signs in at `https://ward-os.com` and lands back there, treat production sign-in as unproven.**
+2. **Custom SMTP, via Resend.** Supabase locks the email-template editor unless custom SMTP is configured, so the branded sign-in email in `supabase/templates/` cannot be applied without it. It also lifts the built-in mailer's dev-only rate limit, which has been throttling multi-seat testing all along. Setup: Resend account → verify `ward-os.com` → DNS records → API key → Supabase SMTP settings (host `smtp.resend.com`, port 465, username literally `resend`, password = the API key, sender `signin@ward-os.com`). Full instructions in `supabase/templates/README.md`.
 
-3. **Custom SMTP, via Resend.** Supabase locks the email-template editor unless custom SMTP is configured, so the branded sign-in email in `supabase/templates/` cannot be applied without it. It also lifts the built-in mailer's dev-only rate limit, which has been throttling multi-seat testing all along. Setup: Resend account → verify `ward-os.com` → DNS records → API key → Supabase SMTP settings (host `smtp.resend.com`, port 465, username literally `resend`, password = the API key, sender `signin@ward-os.com`). Full instructions in `supabase/templates/README.md`.
+3. **Paste the email template into BOTH "Magic Link" and "Confirm signup".** A person's first sign-in triggers Confirm signup, so customising only Magic Link leaves the stock Supabase email as the first thing anyone ever sees.
 
-4. **Paste the email template into BOTH "Magic Link" and "Confirm signup".** A person's first sign-in triggers Confirm signup, so customising only Magic Link leaves the stock Supabase email as the first thing anyone ever sees.
-
-5. **Verify the budget exclusion as David** — see Known defects, item 19. This is the one thing claimed but never observed.
+4. **Verify the budget exclusion as David** — see Known defects, item 19. This is the one thing claimed but never observed.
 
 ### Environment variables
 
@@ -112,6 +110,12 @@ The honest summary: **wardOS now knows who you are and what you may see, but sti
 ---
 
 ## Landed 2026-08-19
+
+- **The demo form works in production.** Migration `202608180001` was applied by the owner with `npx supabase db push`, and the form was then submitted end to end against `https://ward-os.com` through the DevTools Protocol: the success state rendered, with no error banner and no field errors. The server action returns success only after the insert comes back clean, so the row landed.
+
+  **There is a test row in `demo_requests` to delete** — name "Landing page smoke test", unit "test - safe to delete". Nothing reads that table from the app, so it has to go through the Supabase table editor.
+
+  This closes the last broken thing on the landing page. The conversion path is now real, which matters because the honesty section explicitly invites people to start a conversation.
 
 - **The landing page carries no sign-in link, anywhere.** Owner-directed, in two steps: the nav link went first, then the footer link.
 
