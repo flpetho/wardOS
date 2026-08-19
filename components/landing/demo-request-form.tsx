@@ -73,9 +73,8 @@ export function DemoRequestForm() {
           Thank you
         </p>
         <p className="mt-2 max-w-[52ch] text-sm leading-relaxed text-muted-foreground">
-          Thank you. You will get a reply from a person, not a system, and
-          probably not the same day. wardOS is built in evenings around a calling
-          and a full-time job.
+          Thank you. I will reply, though probably not the same day. wardOS is
+          built in evenings around a calling and a full-time job.
         </p>
       </div>
     );
@@ -121,7 +120,7 @@ export function DemoRequestForm() {
         <Field
           label="Calling"
           htmlFor="calling"
-          hint="Optional. Helps us know which seat you are looking at this from."
+          hint="Optional. Helps me know which seat you are looking at this from."
         >
           <Input id="calling" name="calling" placeholder="Relief Society President" />
         </Field>
@@ -151,7 +150,7 @@ export function DemoRequestForm() {
         <SubmitButton />
         <p className="flex items-start gap-1.5 text-[12px] leading-relaxed text-muted-foreground sm:items-center">
           <Lock data-icon="" aria-hidden className="mt-0.5 sm:mt-0" />
-          Your details are only used to reply to you.
+          I only use this to reply to you.
         </p>
       </div>
     </form>

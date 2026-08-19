@@ -256,8 +256,8 @@ export default async function HomePage({
               The meeting decides. Sunday delivers.
             </h2>
             <p className="mt-5 max-w-[62ch] text-[15px] leading-relaxed text-muted-foreground">
-              Built first for an elders quorum, because that is the calling the
-              author holds. The shape underneath is the same for Relief Society,
+              Built first for an elders quorum, because that is the calling I
+              hold. The shape underneath is the same for Relief Society,
               Young Men, Young Women, Primary and Sunday School: a presidency,
               callings with dates on them, and work that has to survive being
               handed to whoever comes next.
@@ -374,10 +374,10 @@ export default async function HomePage({
                   wardOS is not a Church product.
                 </h3>
                 <p className="mt-3 max-w-[46ch] text-sm leading-relaxed text-muted-foreground">
-                  It is an independent tool, built by a quorum member for his own
-                  presidency. It is not affiliated with, endorsed by, or
-                  integrated with any official Church system, and it does not
-                  read or store membership records.
+                  It is an independent tool that I built for my own presidency.
+                  It is not affiliated with, endorsed by, or integrated with any
+                  official Church system, and it does not read or store
+                  membership records.
                 </p>
               </div>
 
@@ -402,10 +402,10 @@ export default async function HomePage({
                   not upgrade this to "used every week" until it is.
                 */}
                 <p className="mt-3 max-w-[46ch] text-sm leading-relaxed text-muted-foreground">
-                  That presidency is the author&apos;s own. There is nobody else
-                  yet and no numbers to quote, which means an early conversation
-                  actually shapes what gets built. If that is earlier than you
-                  want to be involved, it honestly is.
+                  That presidency is mine. There is nobody else yet and no
+                  numbers to quote, which means an early conversation actually
+                  shapes what gets built. If that is earlier than you want to be
+                  involved, it honestly is.
                 </p>
               </div>
             </div>
@@ -422,7 +422,7 @@ export default async function HomePage({
               Help shape it
             </p>
             <h2 className="mt-4 max-w-[24ch] text-[30px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground sm:text-[38px]">
-              Tell us how your presidency actually runs.
+              Tell me how your presidency actually runs.
             </h2>
             <p className="mt-5 max-w-[58ch] text-[15px] leading-relaxed text-muted-foreground">
               wardOS is early enough that a conversation still changes what gets
