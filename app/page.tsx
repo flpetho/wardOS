@@ -400,12 +400,19 @@ export default async function HomePage({
                   access and is giving feedback. It is NOT yet true that anyone
                   runs a Sunday on wardOS, because no domain data persists. Do
                   not upgrade this to "used every week" until it is.
+
+                  It ends on what is wanted, not on a caveat. An earlier version
+                  closed with "if that is earlier than you want to be involved,
+                  it honestly is", which is a conditional whose consequence
+                  restates its condition: it sounds disarming and says nothing.
+                  Resist adding a caveat back. Sentence two already completes
+                  the arc, and the last line now points at the CTA.
                 */}
                 <p className="mt-3 max-w-[46ch] text-sm leading-relaxed text-muted-foreground">
                   That presidency is mine. There is nobody else yet and no
                   numbers to quote, which means an early conversation actually
-                  shapes what gets built. If that is earlier than you want to be
-                  involved, it honestly is.
+                  shapes what gets built. I would rather hear how you run things
+                  than show you what I have built.
                 </p>
               </div>
             </div>
