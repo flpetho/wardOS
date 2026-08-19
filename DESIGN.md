@@ -29,18 +29,39 @@ were rolled and declined. It is the category standard, deliberately.
 
 ---
 
-## Two registers, not one
+## Three registers, not one
 
-wardOS has two surfaces with genuinely different jobs, and they do **not** share
-a visual identity.
+wardOS has three surfaces with genuinely different jobs. **Operate** and **Read**
+do not share a visual identity at all. **Introduce** shares Operate's tokens and
+primitives, but is composed for a scroll rather than for a glance.
 
-| | **Operate** | **Read** |
-|---|---|---|
-| Where | everything behind sign-in | `/p/<ward>/program` — the Sunday bulletin |
-| Who | four or five people who use it weekly | a member who scanned a QR code in the foyer |
-| Ink | near-black `#18181b` on white | a single warm olive `#404231` |
-| Type | DM Sans 400/500/600 | DM Sans 300/500 only |
-| Chrome | sidebar, rail, cards, badges | none — one scrolling column |
+| | **Operate** | **Read** | **Introduce** |
+|---|---|---|---|
+| Where | everything behind sign-in | `/p/<ward>/program` — the Sunday bulletin | `/` — the landing page |
+| Who | four or five people who use it weekly | a member who scanned a QR code in the foyer | a stranger deciding whether to reply |
+| Ink | near-black `#18181b` on white | a single warm olive `#404231` | near-black `#18181b` on white |
+| Type | DM Sans 400/500/600 | DM Sans 300/500 only | same, plus display sizes to 58px |
+| Chrome | sidebar, rail, cards, badges | none — one scrolling column | 64px nav, full-bleed section bands |
+
+### What constrains Introduce, and why it is not a normal landing page
+
+Added 2026-08-18. The rules in `CLAUDE.md` remove most of the standard toolkit,
+and that shaped the composition rather than merely trimming it:
+
+- **No testimonials, logo wall, adoption numbers or endorsements.** Rule 5, and
+  there is nothing true to put there anyway. The page argues from precision
+  about the work instead, and the section "Two things worth saying plainly"
+  states the absence outright rather than leaving a suspicious gap.
+- **No implication of Church affiliation**, and an explicit disclaimer in the
+  footer. Rule 4.
+- **No real ward data.** The hero preview is built from the app's own
+  `StatusBadge`, carries invented work items, is labelled as sample, and
+  deliberately contains no personal names at all.
+- **Light only, no dark mode.** The white field is a pinned brand commitment and
+  the app has no dark mode, so a dark marketing page would be the only one.
+- **CSS motion only, no animation library.** Adding `motion` would pull a
+  dependency into a tree where everything is pinned to `"latest"`. The
+  entrance reuses the existing `.content-enter`.
 
 The bulletin carries its own identity **on purpose**. It was built from the
 owner's Figma design, and its rules are stricter: one ink at two weights, where

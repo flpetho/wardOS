@@ -137,10 +137,11 @@ Live on Vercel, production branch `main`.
 
 | | |
 |---|---|
-| App | https://ward-os-eight.vercel.app |
-| Public bulletin | https://ward-os-eight.vercel.app/p/oak-hills/program |
+| App | https://ward-os.com |
+| Public bulletin | https://ward-os.com/p/oak-hills/program |
 | Vercel project | `ward-os` |
-| Domain owned, not yet attached | `ward-os.com` |
+| `www.ward-os.com` | 308 redirect to the apex |
+| `ward-os-eight.vercel.app` | still assigned to Production, still serves the app |
 
 The same three environment variables must be set in Vercel for **Production,
 Preview and Development**.
@@ -158,8 +159,16 @@ internal tables. Leave **Sensitive off**: every `NEXT_PUBLIC_` value is inlined
 into the client bundle regardless, so marking it sensitive only hides it from
 you.
 
-When attaching `ward-os.com`, update **Supabase → Authentication → URL
+`ward-os.com` was attached on 2026-08-18. DNS is hosted at **Namecheap**
+(BasicDNS), not Vercel: the apex is an A record to Vercel's anycast address, and
+`www` is a CNAME to an **account-specific** `*.vercel-dns-017.com` target that
+only Vercel's Settings → Domains screen will re-issue — the generic
+`cname.vercel-dns.com` in most guides will not work. The apex is canonical and
+`www` 308s to it.
+
+Whenever the origin changes, update **Supabase → Authentication → URL
 Configuration** in the same sitting: Site URL to the new origin, and add
-`https://ward-os.com/**` to Redirect URLs **while keeping**
-`http://localhost:3000/**`. Otherwise production magic links redirect people to
-localhost.
+`https://<new-origin>/**` to Redirect URLs **while keeping**
+`http://localhost:3000/**`. Supabase does not error on an unlisted redirect —
+it silently falls back to the Site URL, so the symptom is a magic link that
+appears to do nothing rather than an error anyone can act on.

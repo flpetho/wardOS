@@ -2,7 +2,7 @@
 
 Where wardOS actually stands. Read this first, every session.
 
-**Last updated:** 2026-08-14
+**Last updated:** 2026-08-18
 
 ---
 
@@ -14,14 +14,14 @@ Where wardOS actually stands. Read this first, every session.
 
 | | |
 |---|---|
-| **Live app** | https://ward-os-eight.vercel.app |
-| **Public bulletin** | https://ward-os-eight.vercel.app/p/oak-hills/program |
+| **Live app** | https://ward-os.com |
+| **Public bulletin** | https://ward-os.com/p/oak-hills/program |
 | **Supabase project** | `pjtagvpucrpybffpjkal`, West US (Oregon) |
 | **Vercel project** | `ward-os` / `prj_RMElNvk0284dMMPvKkaovI4OTDp3` |
 | **Vercel team** | `team_4RPD9yCS6m1a72dJBeOYfTDj` |
-| **Domain owned, NOT attached** | `ward-os.com` |
+| **Old Vercel URL** | `ward-os-eight.vercel.app` — still assigned to Production, still resolves |
 
-Verified in production 2026-08-14: bulletin 200 with real content, `/dashboard` and `/budget` 307 to `/sign-in`, unknown ward slug 404.
+Verified on `ward-os.com` 2026-08-18: `www` 308s to the apex, `/` 307s to `/sign-in?next=%2F`, `/sign-in` 200, bulletin 200, unknown ward slug 404, `/dashboard` and `/budget` 307 to `/sign-in` with `next` preserved, plain HTTP 308s to HTTPS on both hosts, and the Let's Encrypt certificate is valid to 2026-11-17. **Sign-in itself was not re-tested on the new origin** — see "Do these first".
 
 **The next build task is step 3, emphasis on the shared dashboard** — the signed-in seat's work loud, the rest of the presidency's quiet. But see "Do these first" below; several loose ends are cheap now and annoying later.
 
@@ -31,13 +31,15 @@ Verified in production 2026-08-14: bulletin 200 with real content, `/dashboard` 
 
 Ordered by how cheap they are now versus later. None is large.
 
-1. **Attach `ward-os.com` in Vercel** (Settings → Domains), add the DNS records at the registrar, then update **Supabase → Authentication → URL Configuration**: Site URL `https://ward-os.com`, and add `https://ward-os.com/**` to Redirect URLs **while keeping `http://localhost:3000/**`**. Miss the redirect entry and production magic links bounce people to localhost — which looks like a broken app to everyone but the developer.
+1. **Apply migration `202608180001_demo_requests.sql` to the live Supabase project.** The landing page's demo form writes to a table that does not exist in production yet, so **every submission fails until this is applied.** The form degrades to a visible error pointing at an email address rather than looking successful, but a landing page whose only conversion action is broken is worse than no landing page. The migration was verified against a throwaway Postgres 16: all three migrations apply clean in order, and ten assertions pass including anon insert accepted, anon select/update/delete denied, and the note length boundary correct at exactly 600 characters.
 
-2. **Custom SMTP, via Resend.** Supabase locks the email-template editor unless custom SMTP is configured, so the branded sign-in email in `supabase/templates/` cannot be applied without it. It also lifts the built-in mailer's dev-only rate limit, which has been throttling multi-seat testing all along. Setup: Resend account → verify `ward-os.com` → DNS records → API key → Supabase SMTP settings (host `smtp.resend.com`, port 465, username literally `resend`, password = the API key, sender `signin@ward-os.com`). Full instructions in `supabase/templates/README.md`.
+2. **Update Supabase → Authentication → URL Configuration.** The domain is attached and verified, but this half was not confirmed in the same sitting. Site URL `https://ward-os.com`; Redirect URLs must include `https://ward-os.com/**`, `https://www.ward-os.com/**`, `https://ward-os-eight.vercel.app/**` and **`http://localhost:3000/**`**. Supabase does not error on an unlisted redirect — it silently sends the person to the Site URL instead, so a wrong entry reads as a dead magic link rather than a misconfiguration. **Until someone signs in at `https://ward-os.com` and lands back there, treat production sign-in as unproven.**
 
-3. **Paste the email template into BOTH "Magic Link" and "Confirm signup".** A person's first sign-in triggers Confirm signup, so customising only Magic Link leaves the stock Supabase email as the first thing anyone ever sees.
+3. **Custom SMTP, via Resend.** Supabase locks the email-template editor unless custom SMTP is configured, so the branded sign-in email in `supabase/templates/` cannot be applied without it. It also lifts the built-in mailer's dev-only rate limit, which has been throttling multi-seat testing all along. Setup: Resend account → verify `ward-os.com` → DNS records → API key → Supabase SMTP settings (host `smtp.resend.com`, port 465, username literally `resend`, password = the API key, sender `signin@ward-os.com`). Full instructions in `supabase/templates/README.md`.
 
-4. **Verify the budget exclusion as David** — see Known defects, item 19. This is the one thing claimed but never observed.
+4. **Paste the email template into BOTH "Magic Link" and "Confirm signup".** A person's first sign-in triggers Confirm signup, so customising only Magic Link leaves the stock Supabase email as the first thing anyone ever sees.
+
+5. **Verify the budget exclusion as David** — see Known defects, item 19. This is the one thing claimed but never observed.
 
 ### Environment variables
 
@@ -85,7 +87,15 @@ Key routes: `/dashboard`, `/meetings` (shows the model most clearly), `/leadersh
 3. Delete `.agents/AGENTS.md`? It is now actively wrong, not merely stale.
 4. **Personal commitments.** `held_by_person_id` exists in the schema and one seeded commitment uses it, but the release flow that would surface *"Ferenc personally held 2 items — still valid for his successor?"* is **not built**. The column is inert until it is.
 5. **A testing plan is owed.** The owner asked for one covering distinct user types and use cases, ahead of beta with his own presidency, then a second presidency, then the bishopric. Not written.
-6. **Cross-organisation work — designed but not scheduled.** Recorded in `PRODUCT.md` under Users and "Work that crosses organisations". The cheap half is decided (dated assignment, above); the rest is open: does a ward scope sit above organisation scope, is ward council a meeting type, how is a bishopric seat scoped across workspaces rather than across areas, and what guardrail stops pastoral content entering at the point where it is most likely to. **No schema beyond `workspaces.organization` has been built for this.**
+6. **`app.ward-os.com`, and tenancy in the URL — raised by the owner 2026-08-18, recommended, not built.**
+
+   Recommended: move the app to `app.ward-os.com` and leave the apex to the landing page. It is a DNS and Vercel change with **no code change** (nothing hardcodes a host; the magic-link redirect is derived from `window.location.origin`). Two real gains: the apex stops meaning two things at once, and the session cookie scoped to `app.` stops riding along on every anonymous marketing request, which is the same instinct as rule 3. Cheaper now than after QR codes and printed links exist.
+
+   **Not** recommended yet: a workspace segment in the path (`/w/oak-hills/...`). One workspace exists, the resolver already returns the right one, and building the segment now is speculative. It becomes real when workspace **switching** is built, which it must be eventually — the high councilor commonly serves more than one ward, and the model already allows a person to hold seats in several workspaces.
+
+   When it does become real, the shape is almost certainly a **path** segment on `app.`, not a subdomain per ward: subdomain-per-tenant needs wildcard DNS, a wildcard certificate, and makes the session cookie story materially harder for exactly the person most likely to need two workspaces.
+
+7. **Cross-organisation work — designed but not scheduled.** Recorded in `PRODUCT.md` under Users and "Work that crosses organisations". The cheap half is decided (dated assignment, above); the rest is open: does a ward scope sit above organisation scope, is ward council a meeting type, how is a bishopric seat scoped across workspaces rather than across areas, and what guardrail stops pastoral content entering at the point where it is most likely to. **No schema beyond `workspaces.organization` has been built for this.**
 
 ---
 
@@ -101,13 +111,39 @@ The honest summary: **wardOS now knows who you are and what you may see, but sti
 
 ---
 
+## Landed 2026-08-18
+
+- **Public landing page at `/`, with a working demo request form.** wardOS had no marketing surface at all; the apex redirected straight to `/sign-in`, so the domain led to a locked door.
+
+  **A third visual register**, recorded in `DESIGN.md`. Operate is the app, Read is the bulletin, Introduce is this. It reuses Operate's tokens and primitives so the two read as one product, but is composed for a scroll.
+
+  **The constraint that shaped it:** every standard trust lever is forbidden here. No testimonials, no logo wall, no adoption numbers, no endorsement, and rule 4 blocks the one institution the whole audience belongs to. So the page argues from precision about the work, leads with the pastoral boundary as the differentiator, and states the absence of customers outright in "Two things worth saying plainly" rather than leaving a gap a reader would notice anyway.
+
+  **`/` is public by EXACT match, not prefix.** `PUBLIC_EXACT` was added to `proxy.ts` alongside `PUBLIC_PREFIXES`, because `"/anything".startsWith("/")` is true for every path in the app: putting `"/"` in the prefix list would have opened the entire application while looking like a one-word change. Verified after the change that `/dashboard`, `/budget`, `/meetings` and `/admin` still 307 to `/sign-in`.
+
+  **A signed-in person asking for `/` is redirected to `/dashboard` in middleware**, not in the page, so the page needs no database round trip of its own. The redirect is skipped when the request carries `?code=` or `?token_hash=`, otherwise a magic link arriving with a stale session would be swallowed and silently sign the person in as whoever they were before.
+
+  **New table `demo_requests`** (migration `202608180001`) with the opposite policy shape to everything else in the schema: anonymous insert is open, and there is **no select policy at all**, so rows are read in the Supabase table editor. The `note` column is the pastoral risk in this table, and it carries three guardrails: the form labels it operational only, the column is capped at 600 characters so it cannot become a case file, and a table comment tells whoever reads the rows what to do if pastoral content arrives anyway.
+
+  **Verified rather than inferred:** typecheck and build pass; zero horizontal overflow at 390px and 1280px measured through the DevTools Protocol; the migration applies clean to a real Postgres 16 with 10/10 assertions passing; internal routes still gated; `/sign-in` and the bulletin still 200.
+
+  **One defect was caught by looking at it.** The module grid rendered an empty sixth cell as a bare grey rectangle: five articles in a 3-column grid where the first spanned two columns *and* two rows. Dropping the row span makes five articles fill a 3x2 grid exactly.
+
+- **`ward-os.com` attached and canonical.** Both hosts serve from Vercel with valid certificates; `www.ward-os.com` 308s to the apex. The old `ward-os-eight.vercel.app` stays assigned to Production and keeps working, so nothing that already points at it breaks.
+
+  **DNS is hosted at Namecheap, not Vercel** — nameservers `dns1.registrar-servers.com` / `dns2.registrar-servers.com` (BasicDNS). The apex is an **A record to `216.198.79.1`**, Vercel's current anycast address; `www` is a **CNAME to `6ec07e6669dd1a68.vercel-dns-017.com`**. That CNAME target is **account-specific and not derivable** — it is issued per domain, and the only place to recover it is Vercel's Settings → Domains screen after adding the domain. Recorded here because a rebuilt zone needs it and guessing a generic `cname.vercel-dns.com` will not work.
+
+  **No code change was needed.** `components/sign-in-form.tsx` builds `emailRedirectTo` from `window.location.origin`, so the magic-link redirect follows whatever host the visitor is on. There is no site-URL environment variable to update, which is the reason the move cost nothing in the app.
+
+  Vercel's own docs are unreliable on the record values — the CLI examples still print the legacy `76.76.21.21` and `cname.vercel-dns-0.com`. Only the dashboard's per-domain records table is authoritative.
+
 ## Landed 2026-08-13 → 2026-08-14
 
 - **First real deployment.** `main` fast-forwarded to the 18-commit branch and pushed; Vercel builds `main` as production. The first build **failed** — missing env vars aborted the prerender of `/budget` — which was the correct failure rather than shipping without auth. After the three variables were added it built clean and production verified green.
 
 - **Vercel MCP server added at user scope** (`https://mcp.vercel.com`), matching the Figma precedent — project scope would write a `.mcp.json` into the repo and hand the config to anyone cloning it. It exposes projects, deployments, build logs, runtime errors, deployment protection, domain purchase and docs search. **It cannot write environment variables or attach domains**, so those stay dashboard work. It paid for itself immediately by returning the failing build's stack trace directly.
 
-- **`ward-os.com` purchased**, not yet attached. `wardos.com` is held by a reseller at ~$1,500. `wardos.app` taken. `wardos.org` ruled out on rule 4 grounds. `.dev` rejected — non-technical readers parse "dev" as "unfinished", which is corrosive for a tool whose trust model is an emailed sign-in link. `.us` rejected — the usTLD policy forbids WHOIS privacy, so the registrant's home address would be public, and it signals US-only for a global church.
+- **`ward-os.com` purchased** (attached 2026-08-18, see above). `wardos.com` is held by a reseller at ~$1,500. `wardos.app` taken. `wardos.org` ruled out on rule 4 grounds. `.dev` rejected — non-technical readers parse "dev" as "unfinished", which is corrosive for a tool whose trust model is an emailed sign-in link. `.us` rejected — the usTLD policy forbids WHOIS privacy, so the registrant's home address would be public, and it signals US-only for a global church.
 
 - **Budget exclusion fixed on the dashboard.** The high councilor could still read the quorum budget: the nav item was hidden and `/budget` 404'd, but the dashboard panel printed the remaining balance in full. The two surfaces that were tested passed while the actual leak sat on the most-visited page. The core model says "nav item **and** dashboard panel both"; only one had been built. The gap list is now area-filtered too — it leaks nothing today because `computeGaps()` produces no budget gaps, but it is the identical defect one step away.
 
@@ -225,6 +261,10 @@ Auth was deliberately step 2, not step 1 — the schema had to know what a Membe
 
 | Date | Decision |
 |---|---|
+| 2026-08-18 | **The landing page lives at `/` on the apex, and the app stays there too.** `app.ward-os.com` was raised by the owner and is **recommended but not built** — see the open question below. Building the landing page at `/` works either way: if the app later moves to a subdomain, the apex simply keeps the page and drops the signed-in redirect. |
+| 2026-08-18 | **Introduce is a third register, not a restyling of Operate.** It shares tokens, type and pill buttons so the surfaces read as one product, but a marketing page is read by a stranger scrolling, not a member glancing. Recorded because "make the landing page look like the dashboard" and "give the landing page its own look" are both wrong. |
+| 2026-08-18 | **The absence of social proof is stated, not hidden.** Rules 4 and 5 forbid testimonials, adoption numbers and any endorsement, which removes every standard trust lever on a landing page. Rather than leave a gap a reader would notice, the page says plainly that wardOS is independent and not in use anywhere yet. Honesty is the only credibility available at this stage, and it is more convincing than a vague claim. |
+| 2026-08-18 | **`ward-os.com` is canonical; `www` 308s to it.** Vercel's add-domain flow initially landed the reverse. Flipped on the reasoning already recorded on 2026-08-13 — distribution is QR codes and emailed links, so the shorter host is the one that gets printed, pasted and read aloud. Worth one edit at the time because the canonical host is what goes into Supabase's Site URL and into every sign-in email; changing it later means re-cutting both. |
 | 2026-08-13 | **`main` is the truth again.** The feature branch was fast-forwarded in rather than run as production off a branch, because every tool assumes `main` and a branch named `design-system-and-core-model` had long stopped describing its contents. Linear history, no merge commit. |
 | 2026-08-13 | **`ward-os.com` purchased.** Hyphen accepted: distribution is QR codes and emailed links, not people typing a URL from memory, so the hyphen costs less than `.org`'s false institutional signal or `.dev`'s "unfinished" read. |
 | 2026-08-13 | **Fictional seed data may be publicly reachable.** The bulletin at `/p/oak-hills/program` serves invented content on a public URL. Accepted: nothing internal is exposed now that auth works, the names are invented, and the page is deliberately public. Revisit before real ward data enters. |

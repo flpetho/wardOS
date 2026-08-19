@@ -25,15 +25,57 @@ import { updateSession } from "@/lib/supabase/middleware";
  */
 const PUBLIC_PREFIXES = ["/p/", "/signup/", "/sign-in", "/auth/"];
 
+/**
+ * Public routes matched EXACTLY rather than by prefix.
+ *
+ * "/" is the marketing landing page. It has to live here and not in
+ * PUBLIC_PREFIXES, because `"/anything".startsWith("/")` is true for every
+ * path in the application -- adding it there would open the entire app to
+ * anonymous requests while looking like a one-word change.
+ */
+const PUBLIC_EXACT = new Set(["/"]);
+
 function isPublic(pathname: string) {
-  return PUBLIC_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname.startsWith(prefix),
+  return (
+    PUBLIC_EXACT.has(pathname) ||
+    PUBLIC_PREFIXES.some(
+      (prefix) => pathname === prefix || pathname.startsWith(prefix),
+    )
   );
 }
 
 export async function proxy(request: NextRequest) {
   const { response, user } = await updateSession(request);
   const { pathname, search } = request.nextUrl;
+
+  /*
+    Someone who is already signed in and asks for the landing page wants the
+    app, not the sales pitch.
+
+    This lives here rather than in app/page.tsx because middleware has already
+    resolved the session, so the page itself needs no database round trip and
+    stays cheap to render.
+
+    The ?code= guard matters: a magic link lands on "/" carrying a code, and if
+    a stale session is present, redirecting to /dashboard here would swallow
+    the code and silently sign the person in as whoever they were before.
+    Falling through lets app/page.tsx forward it to /auth/callback.
+  */
+  const carriesAuthCode =
+    request.nextUrl.searchParams.has("code") ||
+    request.nextUrl.searchParams.has("token_hash");
+
+  if (user && pathname === "/" && !carriesAuthCode) {
+    const dashboardUrl = request.nextUrl.clone();
+    dashboardUrl.pathname = "/dashboard";
+    dashboardUrl.search = "";
+
+    const toDashboard = NextResponse.redirect(dashboardUrl);
+    for (const cookie of response.cookies.getAll()) {
+      toDashboard.cookies.set(cookie);
+    }
+    return toDashboard;
+  }
 
   if (user || isPublic(pathname)) {
     return response;
