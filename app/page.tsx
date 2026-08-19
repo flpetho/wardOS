@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 export const metadata: Metadata = {
   title: "wardOS",
   description:
-    "An operating dashboard for an elders quorum presidency. Lessons, assignments, service, cleaning, the agenda, and the Sunday program, on one page.",
+    "An operating dashboard for a ward presidency. What was decided, what has to happen by Sunday, and who owns it.",
 };
 
 /*
@@ -41,7 +41,7 @@ const BELONGS = [
   "The building cleaning rotation",
   "Service project logistics and signups",
   "Agenda items, and what was decided about them",
-  "Quorum budget lines",
+  "Budget lines, and what is left of them",
   "The published Sunday program",
 ];
 
@@ -55,8 +55,8 @@ const NEVER = [
 
 const PREVIEW = [
   { work: "Sunday lesson, 24 August", status: "needs_teacher" },
-  { work: "Building cleaning, 30 August", status: "partially_filled" },
-  { work: "Quorum service project", status: "open" },
+  { work: "Service project, 30 August", status: "partially_filled" },
+  { work: "Quarterly activity", status: "open" },
   { work: "Sunday program", status: "ready_for_review" },
 ];
 
@@ -103,9 +103,10 @@ export default async function HomePage({
             no-access page. That is a dead end we would have walked them into,
             and it dilutes the one action this page is for.
 
-            The door still exists, quietly, in the footer: the presidency has to
-            be able to reach it from the domain they were given without being
-            told a secret path. Principle 4, survivable by the next volunteer.
+            There is no sign-in link in the footer either, as of 2026-08-19.
+            Nothing public points at /sign-in at all; the presidency reaches it
+            by bookmark. See STATE.md for the accepted cost and why
+            app.ward-os.com is the right resolution rather than restoring a link.
           */}
           <Link href="#demo">
             <Button size="sm" className="transition-transform active:translate-y-px">
@@ -128,9 +129,8 @@ export default async function HomePage({
                 Everything Sunday needs, on one page.
               </h1>
               <p className="mt-6 max-w-[52ch] text-[17px] leading-relaxed text-muted-foreground">
-                An operating dashboard for an elders quorum presidency. Lessons,
-                assignments, service, cleaning, the agenda, and the Sunday
-                program.
+                An operating dashboard for a ward presidency. What was decided,
+                what has to happen by Sunday, and who owns it.
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <Link href="#demo" className="sm:w-auto">
@@ -255,6 +255,13 @@ export default async function HomePage({
             <h2 className="mt-4 max-w-[24ch] text-[30px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground sm:text-[38px]">
               The meeting decides. Sunday delivers.
             </h2>
+            <p className="mt-5 max-w-[62ch] text-[15px] leading-relaxed text-muted-foreground">
+              Built first for an elders quorum, because that is the calling the
+              author holds. The shape underneath is the same for Relief Society,
+              Young Men, Young Women, Primary and Sunday School: a presidency,
+              callings with dates on them, and work that has to survive being
+              handed to whoever comes next.
+            </p>
 
             <div className="mt-12 grid gap-px overflow-hidden rounded-lg border border-border bg-border md:grid-cols-3">
               {/*
@@ -307,8 +314,8 @@ export default async function HomePage({
                   Signup forms
                 </h3>
                 <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">
-                  A link you text to the quorum. Nobody needs an account at the
-                  other end of it.
+                  A link you text out. Nobody needs an account at the other
+                  end of it.
                 </p>
               </article>
 
@@ -337,8 +344,8 @@ export default async function HomePage({
               <p className="text-[16px] leading-relaxed text-muted-foreground">
                 Everyone in this calling leaves it eventually, usually with
                 little notice, and the person called next inherits whatever was
-                in your head. That is the actual failure mode in quorum
-                administration, and it is not a filing problem.
+                in your head. That is the actual failure mode in ward
+                leadership, and it is not a filing problem.
               </p>
               <p className="text-[16px] leading-relaxed text-foreground">
                 So work in wardOS belongs to the{" "}
@@ -399,7 +406,7 @@ export default async function HomePage({
               Request a demo
             </p>
             <h2 className="mt-4 max-w-[22ch] text-[30px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground sm:text-[38px]">
-              Have a look with your own quorum in mind.
+              Have a look with your own presidency in mind.
             </h2>
             <p className="mt-5 max-w-[58ch] text-[15px] leading-relaxed text-muted-foreground">
               Tell us which seat you serve in and we will walk you through it.

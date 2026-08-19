@@ -29,6 +29,19 @@ These people need a small, focused surface where assignments reach the right ind
 
 **Positioning stays EQ-first — decided 2026-08-13.** Ward council capability is a v2/v3 expansion, not a repositioning. The success criterion is unchanged: one presidency uses this for one full Sunday cycle and prefers it to the spreadsheet. Chasing the bishopric first would mean a bigger product, a top-down adoption path, and a much longer road to anyone using it at all.
 
+**Two directions of expansion, and only one of them was deferred — clarified 2026-08-19.** The 2026-08-13 decision is repeatedly read as "stay elders quorum only". It does not say that, and the distinction matters because one direction is nearly free and the other is a different product:
+
+- **Sideways, to peer organisations** (Relief Society, Young Men, Young Women, Primary, Sunday School). Each is a presidency running its own work. **The core model already fits them unchanged**: seats, dated memberships, work belonging to the seat, release transferring the queue, the commitment loop. `workspaces.organization` exists precisely to name which one a workspace is. Nothing was deferred here, and "Future — other ward presidencies" above has said so since the file was written.
+- **Upward, to oversight** (ward council, the bishopric, the stake). This is what 2026-08-13 deferred, and correctly: it is a genuinely bigger product with a top-down adoption path.
+
+Raised again 2026-08-19 by the owner, prompted by his wife: the same system could serve other Church organisations. That instinct is sound and the schema anticipated it.
+
+**Marketing speaks to any ward presidency, not to a stake — decided 2026-08-19.** The landing page says "a ward presidency" and names the organisations, because a Relief Society president must be able to recognise herself. It deliberately does **not** claim stake level. A stake is not a bigger ward; a stake presidency coordinates wards rather than running one, and nothing in the schema or the modules addresses that. The only stake object that exists is the high councilor seat, which is a liaison *into* a ward quorum. Claiming otherwise would burn the first stake leader who asked, and there will not be many.
+
+**Relief Society is the strongest fit, not merely an equal one.** An RS presidency handles more confidential material than an EQ presidency, so the operational/pastoral boundary is a sharper argument there than where the product started. Worth remembering when the second beta unit is chosen.
+
+**Weakest fit is Primary**, whose work is nursery, classes and the children's programme rather than the lesson/service/cleaning shape currently modelled. Do not promise Primary a close fit without looking at it properly.
+
 ### Work that crosses organisations — confirmed need, not yet built
 
 Observed in real ward council practice and recorded 2026-08-13:

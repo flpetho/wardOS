@@ -253,6 +253,15 @@ The honest summary: **wardOS now knows who you are and what you may see, but sti
   - No print stylesheet. "Bulletin" implies paper, but printing was never confirmed as a requirement.
   - The source Figma frame contains three variants at identical coordinates and renders blank above ~1,400px; the December 15 variant was used as canonical.
 
+## Back pocket for beta
+
+Raised by the owner 2026-08-19, to be worked out **during** the beta with his own presidency rather than before it. None is started. Recorded so they are not rediscovered late.
+
+1. **Accounts.** Today onboarding is two rows added by hand in the Supabase table editor, and there is no self-service anything. A second presidency makes that untenable. This is the largest of the four.
+2. **Pricing model.** Blocked on the unresolved question already in `PRODUCT.md`: ward budget almost certainly cannot buy third-party software, which removes the obvious payer. Decide nothing here until one presidency has used wardOS for a Sunday.
+3. **Screenshots for the landing page.** The page currently carries no product imagery at all, because the only owned photograph is the Gilbert Temple and putting a temple on a marketing page reads as institutional endorsement, which rule 4 forbids. The honest asset is a real screenshot of the dashboard, captioned as sample data.
+4. **Landing page copy, in detail.** The current copy is a first pass written in one sitting. Worth a proper pass once real usage produces real language.
+
 ## Next up
 
 Ordered by the core model agreed 2026-08-11. Read [`docs/plans/2026-08-11-mental-model-design.md`](docs/plans/2026-08-11-mental-model-design.md) before starting any of these.
@@ -273,6 +282,7 @@ Auth was deliberately step 2, not step 1 — the schema had to know what a Membe
 
 | Date | Decision |
 |---|---|
+| 2026-08-19 | **The landing page speaks to any ward presidency, and explicitly not to a stake.** Owner-directed. Peer organisations (Relief Society, Young Men, Young Women, Primary, Sunday School) are named on the page because the core model already fits them unchanged. Stake is refused: a stake presidency coordinates wards rather than running one, nothing in the schema addresses it, and the only stake object that exists is the high councilor liaison seat. See `PRODUCT.md` for the peer-versus-oversight distinction, which is the part of the 2026-08-13 decision that keeps being misread. |
 | 2026-08-19 | **No sign-in link on any public page.** Owner-directed, and reaffirmed after the access cost was raised. A public sign-in invitation walks strangers into the no-access page, because `signInWithOtp` mints an auth user for any address. The presidency reaches `/sign-in` by bookmark. Accepted cost: the domain alone no longer gets a new device into the app, which is in tension with principle 4 and is best resolved by `app.ward-os.com` rather than by restoring the link. |
 | 2026-08-18 | **The landing page lives at `/` on the apex, and the app stays there too.** `app.ward-os.com` was raised by the owner and is **recommended but not built** — see the open question below. Building the landing page at `/` works either way: if the app later moves to a subdomain, the apex simply keeps the page and drops the signed-in redirect. |
 | 2026-08-18 | **Introduce is a third register, not a restyling of Operate.** It shares tokens, type and pill buttons so the surfaces read as one product, but a marketing page is read by a stranger scrolling, not a member glancing. Recorded because "make the landing page look like the dashboard" and "give the landing page its own look" are both wrong. |

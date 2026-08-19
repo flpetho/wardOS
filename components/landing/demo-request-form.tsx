@@ -123,7 +123,7 @@ export function DemoRequestForm() {
           htmlFor="calling"
           hint="Optional. Helps us know which seat you are looking at this from."
         >
-          <Input id="calling" name="calling" placeholder="Elders Quorum President" />
+          <Input id="calling" name="calling" placeholder="Relief Society President" />
         </Field>
 
         <Field label="Ward or stake" htmlFor="unit" hint="Optional.">
