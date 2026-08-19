@@ -95,19 +95,23 @@ export default async function HomePage({
           <span className="text-[15px] font-semibold tracking-[-0.01em] text-foreground">
             wardOS
           </span>
-          <div className="flex items-center gap-1 sm:gap-3">
-            <Link
-              href="/sign-in"
-              className="rounded-full px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              Sign in
-            </Link>
-            <Link href="#demo">
-              <Button size="sm" className="transition-transform active:translate-y-px">
-                Request a demo
-              </Button>
-            </Link>
-          </div>
+          {/*
+            No "Sign in" here on purpose.
+
+            signInWithOtp CREATES an auth user for any address, so a stranger who
+            takes that invitation gets a real email, a real session, and then the
+            no-access page. That is a dead end we would have walked them into,
+            and it dilutes the one action this page is for.
+
+            The door still exists, quietly, in the footer: the presidency has to
+            be able to reach it from the domain they were given without being
+            told a secret path. Principle 4, survivable by the next volunteer.
+          */}
+          <Link href="#demo">
+            <Button size="sm" className="transition-transform active:translate-y-px">
+              Request a demo
+            </Button>
+          </Link>
         </nav>
       </header>
 
